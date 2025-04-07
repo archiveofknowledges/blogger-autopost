@@ -2,13 +2,16 @@ name: 자동 블로그 포스팅
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # 매일 오전 9시 (UTC)
 
 jobs:
   autopost:
     runs-on: ubuntu-latest
 
     env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}  # ✅ 여기 추가
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}  # ✅ 여기에 REFRESH_TOKEN을 추가
 
     steps:
       - name: Checkout repo
