@@ -1,43 +1,72 @@
-from config import TODAY
+import openai
+import os
+from datetime import datetime
+import hashlib
 
-def format_post(data):
-    category = data.get("category", "misc")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-    title = data.get("title", "Untitled")
-    summary = data.get("summary", "")
-    source = data.get("source", "#")
-    year = data.get("year", "")
-    topics = data.get("topics", [])
-    authors = data.get("authors", [])
-    date = data.get("date", TODAY)
+def generate_tags(summary):
+    prompt = f"""Extract 3–5 relevant tags from the following academic summary. Return them as a comma-separated list:
 
-    # HTML content 구성
-    content = f"<h2>{title}</h2>\n"
-    content += f"<p><b>📅 Date:</b> {date}</p>\n"
+"{summary}"
+"""
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.4
+    )
+    tags_text = response.choices[0].message.content.strip()
+    return [tag.strip() for tag in tags_text.split(",") if tag.strip()]
 
-    if authors:
-        content += f"<p><b>👥 Authors:</b> {', '.join(authors)}</p>\n"
-    if year:
-        content += f"<p><b>📅 Published:</b> {year}</p>\n"
-    if topics:
-        content += f"<p><b>📌 Topics:</b> {', '.join(topics)}</p>\n"
+def generate_image_url(title, summary):
+    # hash the title to keep image name deterministic
+    unique_id = hashlib.md5(title.encode()).hexdigest()
+    return f"https://dummyimage.com/600x400/cccccc/000000.png&text={unique_id[:6]}"
 
-    content += f"<p>{summary}</p>\n"
-    content += f"<p><a href='{source}' target='_blank'>🔗 Source</a></p>"
+def format_post(post_data):
+    title = post_data.get("title")
+    summary = post_data.get("summary")
+    category = post_data.get("category")
+    source = post_data.get("source")
+    topics = ", ".join(post_data.get("topics", []))
+    date = datetime.today().strftime("%Y-%m-%d")
+
+    # 제목 스타일 설정
+    if category == "economy":
+        post_title = f"{title} ({date})"
+    else:
+        post_title = title
+
+    # GPT로 전문적인 요약 생성
+    prompt = f"""You are a professional blog writer targeting an academic and economic audience in the United States.
+Based on the following content, generate a clean and professional blog post in English. Use 1–2 paragraphs. Do not include emojis.
+
+Content:
+"{summary}"
+"""
+    gpt_response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.5
+    )
+    body = gpt_response.choices[0].message.content.strip()
+
+    # GPT 태그 추출
+    tags = generate_tags(summary)
+
+    # 이미지 생성 (임시 더미 이미지)
+    image_url = generate_image_url(title, summary)
+
+    content_html = f"""
+<p><img src="{image_url}" alt="Related visual for the article" style="max-width:100%;"/></p>
+<p>{body}</p>
+<p><strong>Source:</strong> <a href="{source}" target="_blank">{source}</a></p>
+<p><strong>Topics:</strong> {topics}</p>
+"""
 
     return {
-        "title": title,
-        "content": content,
-        "labels": generate_tags(data),
+        "title": post_title,
+        "content": content_html,
+        "labels": tags,
         "category": category
     }
-
-def generate_tags(data):
-    tags = set()
-    for field in ["topics", "authors"]:
-        items = data.get(field, [])
-        tags.update(items)
-    for keyword in ["inflation", "CPI", "GDP", "unemployment"]:
-        if keyword.lower() in data.get("summary", "").lower():
-            tags.add(keyword.upper())
-    return list(tags)
