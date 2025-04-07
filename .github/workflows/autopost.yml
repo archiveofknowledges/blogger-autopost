@@ -1,8 +1,6 @@
 name: 자동 블로그 포스팅
 
 on:
-  schedule:
-    - cron: '0 0 * * *'  # 매일 오전 9시 (한국 시간 기준)
   workflow_dispatch:
 
 jobs:
@@ -10,21 +8,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 저장소 체크아웃
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Python 설치
-        uses: actions/setup-python@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.10'
 
-      - name: 의존성 설치
-        run: pip install requests beautifulsoup4 feedparser openai
+      - name: 🔍 Show working directory
+        run: pwd
 
-      - name: 자동 포스팅 실행
+      - name: 🔍 List all files in root
+        run: ls -al
+
+      - name: 🔍 Show requirements.txt content
+        run: cat requirements.txt
+
+      - name: ✅ Install dependencies from requirements.txt
+        run: python -m pip install -r requirements.txt
+
+      - name: 🟢 Run auto-post script
         run: python post.py
-        env:
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
