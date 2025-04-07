@@ -1,100 +1,50 @@
-import importlib
-from config import POST_SETTINGS, BLOG_ID
-from formatter import format_post
 import os
-import json
-import requests
+import importlib
+from datetime import datetime
+import pytz
 
-def get_access_token():
-    client_id = os.getenv("CLIENT_ID")
-    client_secret = os.getenv("CLIENT_SECRET")
-    refresh_token = os.getenv("REFRESH_TOKEN")
+from config import POST_SETTINGS, BLOG_ID, CATEGORIES, OPENAI_MODEL
+from formatter import format_post
+from blogger import post_to_blogger
 
-    if not all([client_id, client_secret, refresh_token]):
-        raise Exception("CLIENT_ID, CLIENT_SECRET, or REFRESH_TOKEN not found in environment variables.")
+print("🚀 Starting auto-posting...")
 
-    token_url = "https://oauth2.googleapis.com/token"
-    data = {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "refresh_token": refresh_token,
-        "grant_type": "refresh_token"
-    }
+# 시간 확인
+tz = pytz.timezone(POST_SETTINGS["TIMEZONE"])
+now = datetime.now(tz)
+print(f"🕒 Current time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
 
-    response = requests.post(token_url, data=data)
-    if response.status_code != 200:
-        raise Exception(f"Failed to get access token: {response.text}")
-    
-    return response.json().get("access_token")
+# 카테고리별 자동 포스팅 처리
+for category, options in CATEGORIES.items():
+    if not isinstance(options, dict) or not options.get("enabled", True):
+        continue
 
-def post_to_blogger(blog_id, access_token, title, content, labels=[], category=None):
-    url = f"https://www.googleapis.com/blogger/v3/blogs/byurl?url=https://{blog_id}.blogspot.com"
-    blog_info = requests.get(url, headers={"Authorization": f"Bearer {access_token}"}).json()
-    blog_id = blog_info.get("id")
+    print(f"\n📚 Fetching posts from category: {category}")
+    fetch_args = {k: v for k, v in options.items() if k != "enabled"}
+    print(f"📄 Fetch args: {fetch_args}")
 
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
+    try:
+        collector = importlib.import_module(f"categories.{category}")
+        raw_posts = collector.fetch_posts(**fetch_args)
+    except Exception as e:
+        print(f"❌ Failed to fetch posts for {category}: {e}")
+        continue
 
-    post_data = {
-        "kind": "blogger#post",
-        "title": title,
-        "content": content,
-        "labels": labels
-    }
+    print(f"🔎 Number of posts fetched: {len(raw_posts)}")
 
-    post_url = f"https://www.googleapis.com/blogger/v3/blogs/{blog_id}/posts/"
-    response = requests.post(post_url, headers=headers, data=json.dumps(post_data))
-
-    if response.status_code in [200, 201]:
-        print(f"✅ Posted: {title}")
-    else:
-        print(f"\n❌ Failed to post: {title}")
-        print(f"📬 Status code: {response.status_code}")
-        print(f"📄 Response: {response.text}\n")
-
-if __name__ == "__main__":
-    print("🚀 Starting auto-posting...")
-
-    access_token = get_access_token()
-
-    for category, options in POST_SETTINGS.items():
-        if not options.get("enabled", False):
-            continue
+    for post in raw_posts:
+        title = post.get("title", "Untitled")
+        summary = post.get("summary", "")
+        body = post.get("body", post.get("summary", ""))
+        source = post.get("source", "")
+        topics = post.get("topics", [])
 
         try:
-            module_path = f"categories.{category}"
-            module = importlib.import_module(module_path)
-
-            fetch_func = getattr(module, "fetch_posts", None)
-            if not fetch_func:
-                print(f"⚠️ Skipping: No fetch_posts function in {module_path}")
-                continue
-
-            fetch_args = {"count": options.get("count", 1)}
-            if "keywords" in options:
-                fetch_args["keywords"] = options["keywords"]
-            elif "countries" in options:
-                fetch_args["countries"] = options["countries"]
-
-            print(f"\n📚 Fetching posts from category: {category}")
-            print(f"📄 Fetch args: {fetch_args}")
-
-            posts = fetch_func(**fetch_args)
-
-            print(f"🔎 Number of posts fetched: {len(posts)}")
-
-            for post_data in posts:
-                formatted = format_post(post_data)
-                post_to_blogger(
-                    blog_id=BLOG_ID,
-                    access_token=access_token,
-                    title=formatted["title"],
-                    content=formatted["content"],
-                    labels=formatted["labels"],
-                    category=formatted["category"]
-                )
-
+            formatted_content = format_post(title, summary, body, source, topics)
+            success = post_to_blogger(BLOG_ID, title, formatted_content)
+            if success:
+                print(f"✅ Posted: {title}")
+            else:
+                print(f"❌ Failed to post: {title}")
         except Exception as e:
-            print(f"[ERROR] Failed category {category}: {e}")
+            print(f"❌ Error posting {title}: {e}")
