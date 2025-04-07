@@ -4,13 +4,13 @@ POST_SETTINGS = {
     "POST_TIME_MINUTE": 0,
 }
 
-BLOG_ID = "archiveofknowledges"  # Blogger 주소: archiveofknowledges.blogspot.com
+BLOG_ID = "archiveofknowledges"
 
 CATEGORIES = {
-    "scholar_arxiv": {"count": 10},         # 학술 정보
+    "scholar_arxiv": {"count": 10},
     "economy": {"count": 1, "countries": ["United States"]},
-    "insurance": {"count": 1},              # 수익형
-    "credit_cards": {"count": 1},           # 수익형
+    "insurance": {"count": 1},
+    "credit_cards": {"count": 1},
 }
 
-OPENAI_MODEL = "gpt-3.5-turbo"  # or "gpt-4-turbo"
+OPENAI_MODEL = "gpt-3.5-turbo"
