@@ -1,79 +1,62 @@
-import openai
-import os
-import base64
-import requests
+from openai import OpenAI
+from datetime import datetime
+import re
 
-from config import OPENAI_MODEL
+client = OpenAI()
 
-def safe_openai_request(messages):
+def generate_post(title, abstract):
     try:
-        response = openai.ChatCompletion.create(
-            model=OPENAI_MODEL,
-            messages=messages,
-            temperature=0.7
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a professional academic blogger. "
+                        "Write a clear, well-structured, ad-friendly blog post in English "
+                        "based on the paper's title and abstract. "
+                        "Keep it concise (1–2 paragraphs), objective, and informative. "
+                        "Use minimal emojis, and include bullet points or tables if necessary."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": f"Title: {title}\nAbstract: {abstract}"
+                }
+            ],
+            temperature=0.7,
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"⚠️ GPT 요청 실패: {e}")
-        return f"<p><em>⚠️ Failed to generate content due to an error: {str(e)}</em></p>"
+        print("⚠️ GPT 요청 실패: ", e)
+        return None
+
 
 def generate_image(prompt):
     try:
-        response = openai.Image.create(
+        response = client.images.generate(
+            model="dall-e-3",
             prompt=prompt,
             n=1,
             size="1024x1024"
         )
-        image_url = response["data"][0]["url"]
-        return image_url
+        return response.data[0].url
     except Exception as e:
-        print(f"⚠️ 이미지 생성 실패: {e}")
+        print("⚠️ 이미지 생성 실패: ", e)
         return None
 
-def format_post(title, summary, body, source=None, topics=None):
-    """
-    Generates an AdSense-optimized blog post with HTML formatting, GPT fallback, and image insertion.
-    """
 
-    # System prompt for AdSense-style formatting
-    system_prompt = """
-You are a professional blog writer creating high-quality, AdSense-optimized posts for an English-speaking audience.
+def sanitize_filename(text):
+    return re.sub(r'[^a-zA-Z0-9_\-]', '_', text)
 
-Format the article using clean HTML structure:
-- <h1> for title
-- <p><em>...</em></p> summary
-- <h2> for each section (2–3 sections max)
-- Short paragraphs (3–5 lines max)
-- <ul> lists if useful
-- <p><strong>Source:</strong> <a href='...'>...</a></p> at the end if applicable
-- Keep the tone professional and informative (no emojis or casual slang).
-"""
 
-    # Combine message
-    user_prompt = f"""
-Title: {title}
-Summary: {summary}
-Content:
-{body}
-"""
+def format_post(title, summary, image_url=None):
+    now = datetime.utcnow().strftime("%B %d, %Y")
 
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt}
-    ]
-
-    # Get GPT content (with exception handling)
-    content = safe_openai_request(messages)
-
-    # Get related image
-    image_url = generate_image(title)
+    html = f"<h2>{title}</h2>\n"
+    html += f"<p><i>Published: {now}</i></p>\n"
     if image_url:
-        image_html = f"<p><img src='{image_url}' alt='Related image' style='max-width:100%; height:auto; border-radius:12px;'></p>\n"
-        content = image_html + content
+        html += f'<img src="{image_url}" alt="{title}" style="max-width:100%;"><br/>\n'
+    html += f"<div>{summary}</div>\n"
 
-    # Append tags if available
-    if topics:
-        tags = ", ".join(topics)
-        content += f"\n\n<p><strong>Tags:</strong> {tags}</p>"
-
-    return content
+    return html
