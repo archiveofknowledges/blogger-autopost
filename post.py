@@ -1,50 +1,36 @@
 import os
-import importlib
-from datetime import datetime
-import pytz
+from formatter import format_post  # formatter에서 함수 호출
 
-from config import POST_SETTINGS, BLOG_ID, CATEGORIES, OPENAI_MODEL
-from formatter import format_post
-from blogger import post_to_blogger
+def fetch_posts(category, count=10, countries=None, keywords=None):
+    # 여기에 arXiv 또는 경제 지표 등 데이터를 가져오는 코드 작성
+    # 예시로 더미 데이터를 반환하는 코드
+    papers = [
+        {"title": "Hide and Seek in Noise Labels: Noise-Robust Collaborative Active Learning with LLM-Powered Assistance", "abstract": "This paper explores..."},
+        {"title": "Robustly identifying concepts introduced during chat fine-tuning using crosscoders", "abstract": "The research investigates..."},
+        # 여기에 다른 논문 추가
+    ]
+    return papers
 
-print("🚀 Starting auto-posting...")
+def post_to_blogger(blog_id, title, content):
+    # Blogger API를 통해 포스팅하는 함수 (앞서 설명한 대로)
+    pass
 
-# 시간 확인
-tz = pytz.timezone(POST_SETTINGS["TIMEZONE"])
-now = datetime.now(tz)
-print(f"🕒 Current time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+def auto_post():
+    categories = ['scholar_arxiv', 'economy', 'insurance', 'credit_cards']
+    for category in categories:
+        posts = fetch_posts(category)  # 데이터를 가져오는 부분
+        for post in posts:
+            title = post["title"]
+            abstract = post["abstract"]
 
-# 카테고리별 자동 포스팅 처리
-for category, options in CATEGORIES.items():
-    if not isinstance(options, dict) or not options.get("enabled", True):
-        continue
-
-    print(f"\n📚 Fetching posts from category: {category}")
-    fetch_args = {k: v for k, v in options.items() if k != "enabled"}
-    print(f"📄 Fetch args: {fetch_args}")
-
-    try:
-        collector = importlib.import_module(f"categories.{category}")
-        raw_posts = collector.fetch_posts(**fetch_args)
-    except Exception as e:
-        print(f"❌ Failed to fetch posts for {category}: {e}")
-        continue
-
-    print(f"🔎 Number of posts fetched: {len(raw_posts)}")
-
-    for post in raw_posts:
-        title = post.get("title", "Untitled")
-        summary = post.get("summary", "")
-        body = post.get("body", post.get("summary", ""))
-        source = post.get("source", "")
-        topics = post.get("topics", [])
-
-        try:
-            formatted_content = format_post(title, summary, body, source, topics)
-            success = post_to_blogger(BLOG_ID, title, formatted_content)
-            if success:
-                print(f"✅ Posted: {title}")
+            # format_post를 통해 포스트 생성
+            formatted_post = format_post(title, abstract, category=category, tags=["tag1", "tag2"], date="2025-04-08")
+            
+            if formatted_post:
+                print(f"✅ Posting: {title}")
+                post_to_blogger(blog_id="YOUR_BLOG_ID", title=formatted_post["title"], content=formatted_post["content"])
             else:
-                print(f"❌ Failed to post: {title}")
-        except Exception as e:
-            print(f"❌ Error posting {title}: {e}")
+                print(f"❌ Failed to format post: {title}")
+
+if __name__ == "__main__":
+    auto_post()
