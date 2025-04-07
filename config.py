@@ -13,4 +13,4 @@ CATEGORIES = {
     "credit_cards": {"count": 1},
 }
 
-OPENAI_MODEL = "gpt-3.5-turbo"
+OPENAI_MODEL = "gpt-4-turbo"  # ✅ 여기만 변경!
