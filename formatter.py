@@ -13,7 +13,7 @@ def generate_tags(summary):
 "{summary}"
 """
     response = client.chat.completions.create(
-        model="gpt-4-turbo",
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.4
     )
@@ -48,7 +48,7 @@ Content:
 "{summary}"
 """
     gpt_response = client.chat.completions.create(
-        model="gpt-4-turbo",
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.5
     )
