@@ -1,26 +1,28 @@
-import feedparser
+name: 자동 블로그 포스팅
 
-def fetch_posts(count=3, keywords=None):
-    feed_url = "https://export.arxiv.org/rss/cs.LG"
-    feed = feedparser.parse(feed_url)
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 매일 오전 9시 (한국시간 기준)
+  workflow_dispatch:       # 수동 실행도 허용
 
-    results = []
-    entries = feed.entries[:count]
+jobs:
+  autopost:
+    runs-on: ubuntu-latest
 
-    for entry in entries:
-        try:
-            results.append({
-                "title": entry.title,
-                "summary": entry.summary,
-                "year": entry.published[:4],
-                "authors": [],  # RSS엔 명확하게 안 나옴
-                "topics": ["machine learning"],
-                "source": entry.link,
-                "category": "scholar_arxiv"
-            })
-        except Exception as e:
-            print(f"[ERROR] arXiv RSS parsing failed: {e}")
-            continue
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v3
 
-    print(f"📚 Collected {len(results)} papers from arXiv RSS.")
-    return results
+      - name: Python 설치
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+
+      - name: 의존성 설치
+        run: pip install requests beautifulsoup4 feedparser
+
+      - name: 자동 포스팅 실행
+        run: python post.py
+        env:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
