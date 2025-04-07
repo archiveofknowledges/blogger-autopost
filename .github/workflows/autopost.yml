@@ -1,0 +1,28 @@
+name: 자동 블로그 포스팅
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 매일 오전 9시 (KST 기준)
+  workflow_dispatch:       # ✅ 수동 실행 허용
+
+jobs:
+  autopost:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v3
+
+      - name: Python 설치
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+
+      - name: 의존성 설치
+        run: pip install requests
+
+      - name: 자동 포스팅 실행
+        run: python post.py
+        env:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
