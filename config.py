@@ -1,24 +1,16 @@
-from datetime import datetime
+CONFIG = {
+    "TIMEZONE": "Asia/Seoul",
+    "POST_TIME_HOUR": 9,
+    "POST_TIME_MINUTE": 0,
 
-BLOG_ID = "archiveofknowledges"
+    "BLOG_ID": "archiveofknowledges",  # Blogger 주소: archiveofknowledges.blogspot.com
 
-POST_SETTINGS = {
-    # 기존 Scholar 비활성화 (남겨둬도 됨)
-    "scholar": {
-        "enabled": False,
-        "count": 3,
-        "keywords": ["transformer"]
+    "CATEGORIES": {
+        "scholar_arxiv": {"count": 10},         # 학술 정보 (논문)
+        "economy": {"count": 1, "countries": ["United States"]},  # 경제 지표
+        "insurance": {"count": 1},              # 수익형: 보험 추천
+        "credit_cards": {"count": 1},           # 수익형: 신용카드 추천
     },
-    # ✅ 새로운 arXiv 기반 수집기 활성화
-    "scholar_arxiv": {
-        "enabled": True,
-        "count": 3
-    },
-    "economy": {
-        "enabled": True,
-        "count": 1,
-        "countries": ["United States"]
-    }
+
+    "OPENAI_MODEL": "gpt-3.5-turbo",  # 또는 gpt-4-turbo (활성화되었을 경우)
 }
-
-TODAY = datetime.today().strftime("%Y-%m-%d")
