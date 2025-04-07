@@ -1,35 +1,26 @@
-import requests
-from bs4 import BeautifulSoup
+import feedparser
 
 def fetch_posts(count=3, keywords=None):
-    url = "https://arxiv.org/list/cs.LG/recent"  # 최근 머신러닝 분야 논문
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, "html.parser")
+    feed_url = "https://export.arxiv.org/rss/cs.LG"  # 머신러닝 분야
+    feed = feedparser.parse(feed_url)
 
     results = []
-    entries = soup.find_all("dd")
-    titles = soup.find_all("div", class_="list-title mathjax")
-    abstracts = soup.find_all("p", class_="mathjax")
+    entries = feed.entries[:count]
 
-    for i in range(min(count, len(entries))):
+    for entry in entries:
         try:
-            title = titles[i].text.replace("Title:", "").strip()
-            summary = abstracts[i].text.strip()
-            link_tag = entries[i].find_previous_sibling("dt").find("a", title="Abstract")
-            link = f"https://arxiv.org{link_tag['href']}" if link_tag else "#"
-
             results.append({
-                "title": title,
-                "summary": summary,
-                "year": "2025",
-                "authors": [],
+                "title": entry.title,
+                "summary": entry.summary,
+                "year": entry.published[:4],
+                "authors": [],  # RSS에서는 추출 어려움
                 "topics": ["machine learning"],
-                "source": link,
+                "source": entry.link,
                 "category": "scholar_arxiv"
             })
         except Exception as e:
-            print(f"[ERROR] arXiv parsing failed: {e}")
+            print(f"[ERROR] arXiv RSS parsing failed: {e}")
             continue
 
-    print(f"📚 Collected {len(results)} papers from arXiv.")
+    print(f"📚 Collected {len(results)} papers from arXiv RSS.")
     return results
