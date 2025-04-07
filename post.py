@@ -50,7 +50,6 @@ def post_to_blogger(blog_id, access_token, title, content, labels=[], category=N
         print(f"📬 Status code: {response.status_code}")
         print(f"📄 Response: {response.text}\n")
 
-
 if __name__ == "__main__":
     print("🚀 Starting auto-posting...")
 
@@ -69,14 +68,18 @@ if __name__ == "__main__":
                 print(f"⚠️ Skipping: No fetch_posts function in {module_path}")
                 continue
 
-            # ✅ 카테고리에 따라 인자 자동 분기
             fetch_args = {"count": options.get("count", 1)}
             if "keywords" in options:
                 fetch_args["keywords"] = options["keywords"]
             elif "countries" in options:
                 fetch_args["countries"] = options["countries"]
 
+            print(f"\n📚 Fetching posts from category: {category}")
+            print(f"📄 Fetch args: {fetch_args}")
+
             posts = fetch_func(**fetch_args)
+
+            print(f"🔎 Number of posts fetched: {len(posts)}")
 
             for post_data in posts:
                 formatted = format_post(post_data)
