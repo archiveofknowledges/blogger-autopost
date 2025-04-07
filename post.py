@@ -43,10 +43,13 @@ def post_to_blogger(blog_id, access_token, title, content, labels=[], category=N
     post_url = f"https://www.googleapis.com/blogger/v3/blogs/{blog_id}/posts/"
     response = requests.post(post_url, headers=headers, data=json.dumps(post_data))
 
-    if response.status_code == 200:
+    if response.status_code in [200, 201]:
         print(f"✅ Posted: {title}")
     else:
-        print(f"❌ Failed to post: {title} | {response.text}")
+        print(f"\n❌ Failed to post: {title}")
+        print(f"📬 Status code: {response.status_code}")
+        print(f"📄 Response: {response.text}\n")
+
 
 if __name__ == "__main__":
     print("🚀 Starting auto-posting...")
