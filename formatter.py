@@ -37,7 +37,7 @@ def generate_image(prompt):
         print("⚠️ 이미지 생성 실패: ", e)
         return None
 
-def format_post(title, abstract):
+def format_post(title, abstract, category=None, tags=None, date=None):
     body = generate_post(title, abstract)
     if not body:
         return None
@@ -45,9 +45,17 @@ def format_post(title, abstract):
     image_url = generate_image(f"Conceptual illustration for: {title}")
     image_html = f'<img src="{image_url}" alt="{title}" style="max-width:100%;">' if image_url else ""
 
+    tag_html = ""
+    if tags:
+        tag_html = "<p><strong>Tags:</strong> " + ", ".join(tags) + "</p>"
+
+    date_html = f"<p><em>{date}</em></p>" if date else ""
+
     full_content = f"""
 <h2>{title}</h2>
 {image_html}
+{date_html}
+{tag_html}
 <div>{body}</div>
 """
 
@@ -57,7 +65,6 @@ def format_post(title, abstract):
     }
 
 def extract_tags(text):
-    # 간단한 키워드 추출 (태그 자동화)
     keywords = re.findall(r'\b[A-Za-z]{4,}\b', text)
     common = set([
         "abstract", "paper", "study", "result", "data", "model", "method",
