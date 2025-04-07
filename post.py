@@ -66,10 +66,14 @@ if __name__ == "__main__":
                 print(f"⚠️ Skipping: No fetch_posts function in {module_path}")
                 continue
 
-            posts = fetch_func(
-                count=options.get("count", 1),
-                keywords=options.get("keywords") or options.get("countries")
-            )
+            # ✅ 카테고리에 따라 인자 자동 분기
+            fetch_args = {"count": options.get("count", 1)}
+            if "keywords" in options:
+                fetch_args["keywords"] = options["keywords"]
+            elif "countries" in options:
+                fetch_args["countries"] = options["countries"]
+
+            posts = fetch_func(**fetch_args)
 
             for post_data in posts:
                 formatted = format_post(post_data)
