@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}  # ✅ 여기에 REFRESH_TOKEN을 추가
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}  # API 키
+      REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}    # REFRESH_TOKEN 환경변수 추가
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}            # CLIENT_ID 환경변수 추가
+      CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}    # CLIENT_SECRET 환경변수 추가
 
     steps:
       - name: Checkout repo
