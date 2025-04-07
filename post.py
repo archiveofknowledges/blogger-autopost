@@ -8,19 +8,23 @@ import requests
 def get_access_token():
     client_id = os.getenv("CLIENT_ID")
     client_secret = os.getenv("CLIENT_SECRET")
+    refresh_token = os.getenv("REFRESH_TOKEN")
 
-    if not client_id or not client_secret:
-        raise Exception("CLIENT_ID or CLIENT_SECRET not found in environment variables.")
+    if not all([client_id, client_secret, refresh_token]):
+        raise Exception("CLIENT_ID, CLIENT_SECRET, or REFRESH_TOKEN not found in environment variables.")
 
     token_url = "https://oauth2.googleapis.com/token"
     data = {
         "client_id": client_id,
         "client_secret": client_secret,
-        "grant_type": "client_credentials",
-        "scope": "https://www.googleapis.com/auth/blogger"
+        "refresh_token": refresh_token,
+        "grant_type": "refresh_token"
     }
 
     response = requests.post(token_url, data=data)
+    if response.status_code != 200:
+        raise Exception(f"Failed to get access token: {response.text}")
+    
     return response.json().get("access_token")
 
 def post_to_blogger(blog_id, access_token, title, content, labels=[], category=None):
