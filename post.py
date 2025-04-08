@@ -12,7 +12,7 @@ BLOGGER_API_KEY = "your-blogger-api-key"
 def generate_scholar_post():
     # 학술적 포스트 생성 (OpenAI를 이용하여)
     response = openai.completions.create(
-        model="text-davinci-003",
+        model="gpt-3.5-turbo",  # 최신 모델 사용
         prompt="Write an academic blog post based on recent research in AI",
         max_tokens=200,
         temperature=0.7
