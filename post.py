@@ -14,28 +14,54 @@ def generate_scholar_post():
     response = openai.Completion.create(
         engine="text-davinci-003",
         prompt="Write an academic blog post based on recent research in AI",
-        max_tokens=200,
+        max_tokens=500,
         temperature=0.7
     )
-    return response.choices[0].text.strip()
+    post = response.choices[0].text.strip()
+    post = f"### Introduction\n{post}\n\n### Conclusion\nThis is a detailed analysis on the topic."
+    return post
 
 def generate_economy_post():
     # 경제 지표 포스트 생성 (웹 크롤링 및 분석)
     response = requests.get("https://api.exchangerate-api.com/v4/latest/USD")
     data = response.json()
     economy_data = data['rates']
-    post = f"Today's economy update: USD to EUR exchange rate is {economy_data['EUR']}."
+    post = f"Today's economy update: USD to EUR exchange rate is {economy_data['EUR']}.\n\n"
+    
+    # 시각화 추가 (예: 환율 변동 차트)
+    currencies = list(economy_data.keys())[:10]  # 상위 10개 통화
+    values = [economy_data[currency] for currency in currencies]
+    
+    plt.bar(currencies, values)
+    plt.xlabel("Currency")
+    plt.ylabel("Exchange Rate")
+    plt.title("Top 10 Exchange Rates (USD Base)")
+    plt.xticks(rotation=45)
+    
+    # 그래프 저장
+    chart_path = "/tmp/economy_chart.png"
+    plt.savefig(chart_path)
+    post += f"\n\n![Exchange Rates Chart]({chart_path})"
+    
     return post
 
 def generate_minecraft_post():
     # 마인크래프트 관련 추천 글 생성
     post = "Top Minecraft Mods for 2025"
     mods = ["Mod 1", "Mod 2", "Mod 3"]
-    return f"Check out these amazing Minecraft mods: {', '.join(mods)}."
+    post += f"\n\nThese mods will enhance your Minecraft experience in 2025. Don't miss out on these amazing mods!"
+    
+    # 추가 이미지나 유용한 링크 삽입 (애드센스 친화적)
+    post += "\n\nFor more information, check out the following resources:\n\n[Learn More About Minecraft Mods](https://www.minecraft.net/)"
+    return post
 
 def generate_financial_post():
     # 대출, 세금, 보험 관련 포스트
     post = "Understanding Mortgage Rates and How They Affect You"
+    post += "\n\nThis post will break down the concept of mortgage rates and provide tips on how to choose the best options for your financial situation."
+    
+    # 애드센스 친화적인 링크 삽입
+    post += "\n\nFor the best mortgage rates, visit [Best Mortgage Rates](https://www.example.com/mortgage-rates)."
     return post
 
 def create_post(title, content, category):
