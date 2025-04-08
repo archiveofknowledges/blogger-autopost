@@ -22,9 +22,10 @@ def generate_html_post():
 
     prompt = (
         f"You are a helpful web development tutor. Write a detailed HTML tutorial blog post on the topic: '{selected_topic}'. "
-        "Respond using only raw HTML, not Markdown. Use <h2> for title, <h3> for section headings, and wrap each paragraph in <p> tags. "
-        "Include a single <pre><code class='language-html'>...</code></pre> code block separately. Do not use triple backticks. "
-        "This output should be usable directly in a Blogger HTML post."
+        "Respond using only clean HTML formatting. DO NOT use any Markdown. DO NOT use triple backticks. "
+        "Use <h2> for the main title, <h3> for section headings, and wrap all explanation text in <p> tags. "
+        "Include one clearly separated code block using <pre><code class='language-html'>...</code></pre>. "
+        "Ensure this output can be posted directly into a Blogger post and will render correctly."
     )
 
     response = openai.chat.completions.create(
