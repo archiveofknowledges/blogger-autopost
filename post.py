@@ -41,15 +41,36 @@ def create_post(title, content, category, tags, code_block=None):
         print("❌ Cannot post without access token.")
         return
 
-    # ✅ 코드가 있으면 복사 버튼과 함께 본문에 추가
+    # ✅ 코드가 있으면 복사 버튼과 함께 본문에 추가 (스타일 적용)
     if code_block:
         content += f"""
 <h3>Copyable Code Example</h3>
-<div style='position: relative;'>
-  <button onclick=\"navigator.clipboard.writeText(this.nextElementSibling.innerText)\" 
-          style='position:absolute;right:0;top:0;'>📋 Copy</button>
+<div style='position: relative; margin-top: 1em;'>
+  <button onclick=\"copyCode(this)\" style="
+      position: absolute;
+      right: 0;
+      top: 0;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 0.9em;
+      border-radius: 4px;
+  ">📋 Copy</button>
   {code_block}
 </div>
+
+<script>
+function copyCode(button) {{
+  const code = button.nextElementSibling.innerText;
+  navigator.clipboard.writeText(code).then(() => {{
+    const original = button.innerText;
+    button.innerText = "✅ Copied!";
+    setTimeout(() => button.innerText = original, 1500);
+  }});
+}}
+</script>
 """
 
     url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/"
