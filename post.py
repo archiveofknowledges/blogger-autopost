@@ -10,7 +10,6 @@ from categories import html, css, javascript, python, react, nodejs
 from post_logger import log_post, save_log_to_gist
 from email_reporter import send_email_report
 
-
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 REFRESH_TOKEN = os.environ.get("REFRESH_TOKEN")
@@ -117,8 +116,8 @@ def main():
     print("🚀 Starting randomized daily auto-post")
 
     now = datetime.datetime.utcnow()
-    if now.hour != 0:
-        print("⏳ Not the scheduled UTC 00:00 (KST 09:00). Skipping run.")
+    if not (now.hour == 0 and now.minute <= 10):
+        print("⏳ Not close enough to 00:00 UTC. Skipping run.")
         return
 
     post_generators = [
