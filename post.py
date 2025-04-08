@@ -3,8 +3,9 @@ import datetime
 import os
 import requests
 import random
+import time
 
-# 환경 변수 (GitHub Secrets에서 불러옴)
+# 환경변수: GitHub Secrets 기준
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
@@ -20,13 +21,13 @@ CATEGORY_CONFIG = {
     "insurance": 1
 }
 
-# 디버깅용 환경 변수 출력
+# ENV 디버깅
 print("🔎 ENV CHECK")
 print("CLIENT_ID:", CLIENT_ID[:4] if CLIENT_ID else "❌ Missing")
 print("CLIENT_SECRET:", CLIENT_SECRET[:4] if CLIENT_SECRET else "❌ Missing")
 print("REFRESH_TOKEN:", REFRESH_TOKEN[:4] if REFRESH_TOKEN else "❌ Missing")
 
-# Blogger access_token 갱신
+# Google Access Token 발급
 def get_access_token():
     try:
         response = requests.post(
@@ -39,7 +40,6 @@ def get_access_token():
             }
         )
 
-        # Google 응답 전체 출력 (디버깅용)
         print("🔍 Raw response from Google:")
         print(response.status_code)
         print(response.text)
@@ -51,11 +51,11 @@ def get_access_token():
         return None
 
 # Blogger 포스트 업로드
-def create_post(title, content, category, access_token):
+def create_post(post, access_token):
     post_data = {
-        "title": title,
-        "content": content,
-        "labels": [category]
+        "title": post["title"],
+        "content": post["content"],
+        "labels": [post["category"]] + post.get("tags", [])
     }
 
     try:
@@ -69,13 +69,13 @@ def create_post(title, content, category, access_token):
         )
 
         if response.status_code == 200:
-            print(f"✅ Posted: {title}")
+            print(f"✅ Posted: {post['title']}")
         else:
-            print(f"❌ Failed: {title} → {response.text}")
+            print(f"❌ Failed: {post['title']} → {response.text}")
     except Exception as e:
-        print(f"❌ Error posting '{title}': {e}")
+        print(f"❌ Error posting '{post['title']}': {e}")
 
-# 테스트용 dummy 데이터 생성
+# 더미 post_data 생성 (기본 구조 + 내용 샘플은 각 모듈에서)
 def generate_dummy_data(category):
     if category == "scholar":
         return {
@@ -89,19 +89,42 @@ def generate_dummy_data(category):
             "references": "Doe et al. (2023), Smith et al. (2024)"
         }
     elif category == "economy":
-        return {"summary": "Today's inflation report shows a mild slowdown."}
+        return {
+            "indicator_name": "Consumer Price Index",
+            "indicator_value": "3.2%",
+            "summary": "Inflation is showing early signs of cooling down this quarter."
+        }
     elif category == "minecraft":
-        return {"mods": ["OptiFine", "Create", "Twilight Forest"]}
+        return {
+            "year": 2025,
+            "mods": ["OptiFine", "Create", "Twilight Forest"],
+            "category": "Visual + Exploration"
+        }
     elif category == "credit_cards":
-        return {"card_name": "Platinum Plus", "benefits": "Travel rewards & Cashback"}
+        return {
+            "card_name": "Platinum Plus",
+            "benefits": "5% cashback on groceries, travel insurance included",
+            "issuer": "Bank of GPT",
+            "target_audience": "Young professionals"
+        }
     elif category == "finance":
-        return {"topic": "ETF vs Mutual Fund", "explanation": "Here’s how they differ..."}
+        return {
+            "topic": "Retirement Planning",
+            "target_group": "Millennials",
+            "advice": "Start early with a Roth IRA and low-fee index funds.",
+            "recommended_plan": "Fidelity Growth Fund"
+        }
     elif category == "insurance":
-        return {"type": "Health Insurance", "tips": "Compare deductibles and coverage"}
+        return {
+            "insurance_type": "Health Insurance",
+            "coverage": "Inpatient + outpatient + dental",
+            "tips": "Compare premiums vs. deductibles to find your ideal balance.",
+            "source": "Healthcare.gov"
+        }
     else:
         return {}
 
-# 메인 실행 루틴
+# 메인 실행 함수
 def main():
     access_token = get_access_token()
     if not access_token:
@@ -117,7 +140,14 @@ def main():
             for _ in range(count):
                 post_data = generate_dummy_data(category)
                 post = generate_func(post_data)
-                create_post(post["title"], post["content"], category, access_token)
+
+                # 제목이 중복되지 않도록 타임스탬프나 숫자 추가
+                now = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")
+                if "unique" not in post["title"].lower():
+                    post["title"] = f"{post['title']} ({now})"
+
+                create_post(post, access_token)
+                time.sleep(2)  # rate limit 대응
 
         except Exception as e:
             print(f"❌ Error in category '{category}': {e}")
