@@ -1,32 +1,26 @@
 import requests
 import json
-import os
 
-def post_to_blogger(blog_id, title, content):
-    access_token = os.getenv("ACCESS_TOKEN")
-    if not access_token:
-        print("❌ No access token available.")
-        return False
-
+def post_to_blogger(title, content, category, blogger_api_key, blog_id):
+    """
+    Blogger API를 통해 포스트를 업로드하는 함수
+    """
     url = f"https://www.googleapis.com/blogger/v3/blogs/{blog_id}/posts/"
-
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {blogger_api_key}",
         "Content-Type": "application/json"
     }
-
-    data = {
-        "kind": "blogger#post",
+    
+    post_data = {
         "title": title,
-        "content": content
+        "content": content,
+        "labels": [category],
+        "status": "live"
     }
-
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-
+    
+    response = requests.post(url, headers=headers, json=post_data)
+    
     if response.status_code == 200:
-        return True
+        print(f"Successfully posted: {title}")
     else:
-        print(f"❌ Failed to post: {title}")
-        print(f"📬 Status code: {response.status_code}")
-        print(f"📄 Response: {response.text}")
-        return False
+        print(f"Failed to post: {title}, Error: {response.text}")
