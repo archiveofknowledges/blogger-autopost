@@ -8,6 +8,8 @@ import random
 from categories import scholar, economy, minecraft
 from categories import html, css, javascript, python, react, nodejs
 from post_logger import log_post, save_log_to_gist
+from email_reporter import send_email_report
+
 
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
@@ -153,6 +155,8 @@ def main():
             print(f"❌ Error posting from generator '{generator.__name__}':", e)
 
     save_log_to_gist()
+    send_email_report()
+
 
 if __name__ == "__main__":
     main()
