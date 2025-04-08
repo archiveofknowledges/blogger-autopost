@@ -1,21 +1,21 @@
 import os
 import datetime
 import requests
+import openai
 from categories import scholar
+from categories import html
 
-# ▶️ 필수: Blogger 인증 정보
+# ✅ 환경변수
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 REFRESH_TOKEN = os.environ.get("REFRESH_TOKEN")
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 BLOG_ID = "2146078384292830084"
 
-# ▶️ OpenAI
-import openai
-openai.api_key = os.environ.get("OPENAI_API_KEY")
-
+# ✅ Blogger Access Token 발급
 def get_access_token():
     if not (CLIENT_ID and CLIENT_SECRET and REFRESH_TOKEN):
-        print("❌ 환경변수 누락: CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN")
+        print("❌ Missing CLIENT_ID / CLIENT_SECRET / REFRESH_TOKEN")
         return None
 
     token_url = "https://oauth2.googleapis.com/token"
@@ -29,38 +29,17 @@ def get_access_token():
     response = requests.post(token_url, data=payload)
     if response.status_code == 200:
         access_token = response.json().get("access_token")
-        print("✅ Access token 발급 성공")
+        print("✅ Access token received")
         return access_token
     else:
-        print("❌ Access token 발급 실패:", response.text)
+        print("❌ Failed to get access token:", response.text)
         return None
 
-def generate_scholar_post():
-    prompt = """
-    You are an academic writing assistant. Write a detailed, well-structured academic blog post
-    about a current topic in AI research. Format the content using HTML. Use <h2> for the title,
-    <h3> for headings, and wrap each paragraph in <p> tags. Avoid Markdown formatting.
-
-    Include sections: Introduction, Literature Review, Methodology, Results and Discussion, Conclusion, References.
-    """
-    response = openai.chat.completions.create(
-        model="gpt-4-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-        max_tokens=1500
-    )
-    content = response.choices[0].message.content.strip()
-    return {
-        "title": "Exploring Recent Advances in AI Research",
-        "content": content,
-        "category": "scholar",
-        "tags": ["AI", "Research", "Machine Learning", "Academic", "Deep Learning"]
-    }
-
+# ✅ Blogger 포스트 업로드
 def create_post(title, content, category, tags):
     access_token = get_access_token()
     if not access_token:
-        print("❌ access token 없음 → 포스팅 불가")
+        print("❌ Cannot post without access token.")
         return
 
     url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/"
@@ -78,18 +57,28 @@ def create_post(title, content, category, tags):
 
     response = requests.post(url, headers=headers, json=post_data)
     if response.status_code == 200:
-        print(f"✅ 성공적으로 게시됨: {title}")
+        print(f"✅ Posted: {title}")
     else:
-        print(f"❌ 게시 실패: {title} → {response.text}")
+        print(f"❌ Failed: {title} → {response.text}")
 
+# ✅ main(): scholar + html 1개씩 테스트
 def main():
-    print("🚀 Scholar 카테고리 단일 포스트 테스트 시작")
-    post = generate_scholar_post()
+    print("🚀 Starting test post: scholar + html (no delay)")
+
+    scholar_post = scholar.generate_scholar_post()
     create_post(
-        title=post["title"],
-        content=post["content"],
-        category=post["category"],
-        tags=post["tags"]
+        title=scholar_post["title"],
+        content=scholar_post["content"],
+        category=scholar_post["category"],
+        tags=scholar_post["tags"]
+    )
+
+    html_post = html.generate_html_post()
+    create_post(
+        title=html_post["title"],
+        content=html_post["content"],
+        category=html_post["category"],
+        tags=html_post["tags"]
     )
 
 if __name__ == "__main__":
