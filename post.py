@@ -50,7 +50,7 @@ def create_post(title, content, category):
     
     # Blogger API 사용해서 포스트 업로드
     response = requests.post(
-        "https://www.googleapis.com/blogger/v3/blogs/your_blog_id/posts/",
+        "https://www.googleapis.com/blogger/v3/blogs/2146078384292830084/posts/",
         headers={"Authorization": f"Bearer {BLOGGER_API_KEY}"},
         json=post_data
     )
