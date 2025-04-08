@@ -44,21 +44,35 @@ def create_post(title, content, category, tags, code_block=None):
     # ✅ 코드가 있으면 복사 버튼과 함께 본문에 추가 (스타일 적용)
     if code_block:
         content += f"""
+<style>
+.copy-code-block {{
+  background: #f4f4f4;
+  border: 1px solid #ccc;
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.95em;
+  line-height: 1.5;
+  font-family: monospace;
+}}
+.copy-button {{
+  position: absolute;
+  right: 0;
+  top: 0;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.9em;
+  border-radius: 4px;
+}}
+</style>
+
 <h3>Copyable Code Example</h3>
 <div style='position: relative; margin-top: 1em;'>
-  <button onclick=\"copyCode(this)\" style="
-      position: absolute;
-      right: 0;
-      top: 0;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-size: 0.9em;
-      border-radius: 4px;
-  ">📋 Copy</button>
-  {code_block}
+  <button onclick=\"copyCode(this)\" class='copy-button'>Copy</button>
+  <pre class='copy-code-block'>{code_block}</pre>
 </div>
 
 <script>
@@ -66,7 +80,7 @@ function copyCode(button) {{
   const code = button.nextElementSibling.innerText;
   navigator.clipboard.writeText(code).then(() => {{
     const original = button.innerText;
-    button.innerText = "✅ Copied!";
+    button.innerText = "Copied!";
     setTimeout(() => button.innerText = original, 1500);
   }});
 }}
