@@ -2,12 +2,20 @@ name: 자동 블로그 포스팅
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # 매일 오전 9시 (UTC)
+    - cron: '0 9 * * *'  # 매일 오전 9시 (KST)
   workflow_dispatch:
 
 jobs:
   autopost:
     runs-on: ubuntu-latest
+
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+      REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}  # 혹시 사용 중이면 함께 유지
+      BLOGGER_API_KEY: ${{ secrets.BLOGGER_API_KEY }}  # 사용하지 않으면 삭제 가능
 
     steps:
       - name: Checkout repository
@@ -25,6 +33,3 @@ jobs:
 
       - name: Run post script
         run: python post.py
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          BLOGGER_API_KEY: ${{ secrets.BLOGGER_API_KEY }}
