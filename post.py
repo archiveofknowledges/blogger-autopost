@@ -7,8 +7,8 @@ import random
 
 from categories import scholar, economy, minecraft
 from categories import html, css, javascript, python, react, nodejs
+from post_logger import log_post, save_log_to_gist
 
-# ✅ 환경변수
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 REFRESH_TOKEN = os.environ.get("REFRESH_TOKEN")
@@ -106,6 +106,7 @@ function copyCode(button) {{
     response = requests.post(url, headers=headers, json=post_data)
     if response.status_code == 200:
         print(f"✅ Posted: {title}")
+        log_post(title, category)
     else:
         print(f"❌ Failed: {title} → {response.text}")
 
@@ -113,7 +114,6 @@ function copyCode(button) {{
 def main():
     print("🚀 Starting randomized daily auto-post")
 
-    # 한국 기준 9시 (KST → UTC: -9시간)
     now = datetime.datetime.utcnow()
     if now.hour != 0:
         print("⏳ Not the scheduled UTC 00:00 (KST 09:00). Skipping run.")
@@ -131,9 +131,8 @@ def main():
         nodejs.generate_nodejs_post
     ]
 
-    random.shuffle(post_generators)  # 순서 섞기
-
-    delays = sorted(random.sample(range(0, 180), len(post_generators)))  # 0~180분 중 랜덤 지연 (최대 3시간)
+    random.shuffle(post_generators)
+    delays = sorted(random.sample(range(0, 180), len(post_generators)))
 
     for i, generator in enumerate(post_generators):
         if i > 0:
@@ -152,6 +151,8 @@ def main():
             )
         except Exception as e:
             print(f"❌ Error posting from generator '{generator.__name__}':", e)
+
+    save_log_to_gist()
 
 if __name__ == "__main__":
     main()
