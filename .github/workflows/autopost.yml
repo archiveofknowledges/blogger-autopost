@@ -2,7 +2,7 @@ name: 자동 블로그 포스팅
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # 매일 오전 9시에 실행
+    - cron: '0 9 * * *'  # 매일 오전 9시 (UTC)
   workflow_dispatch:
 
 jobs:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -19,12 +19,12 @@ jobs:
           python-version: '3.10'
 
       - name: Install dependencies
-        run: python -m pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Run auto-post script
+      - name: Run post script
         run: python post.py
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          BLOGGER_API_KEY: ${{ secrets.BLOGGER_API_KEY }}
