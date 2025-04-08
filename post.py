@@ -2,7 +2,11 @@ import os
 import datetime
 import requests
 import openai
-from categories import html
+import time
+import random
+
+from categories import scholar, economy, minecraft
+from categories import html, css, javascript, python, react, nodejs
 
 # ✅ 환경변수
 CLIENT_ID = os.environ.get("CLIENT_ID")
@@ -41,7 +45,6 @@ def create_post(title, content, category, tags, code_block=None):
         print("❌ Cannot post without access token.")
         return
 
-    # ✅ 코드가 있으면 복사 버튼과 함께 본문에 추가 (스타일 적용)
     if code_block:
         content += f"""
 <style>
@@ -106,18 +109,49 @@ function copyCode(button) {{
     else:
         print(f"❌ Failed: {title} → {response.text}")
 
-# ✅ main(): HTML 포스트만 테스트 (scholar 비활성화)
+# ✅ main(): 무작위 순서 + 무작위 지연 간격 (KST 기준)
 def main():
-    print("🚀 Starting test post: html only (no delay)")
+    print("🚀 Starting randomized daily auto-post")
 
-    html_post = html.generate_html_post()
-    create_post(
-        title=html_post["title"],
-        content=html_post["content"],
-        category=html_post["category"],
-        tags=html_post["tags"],
-        code_block=html_post.get("code")
-    )
+    # 한국 기준 9시 (KST → UTC: -9시간)
+    now = datetime.datetime.utcnow()
+    if now.hour != 0:
+        print("⏳ Not the scheduled UTC 00:00 (KST 09:00). Skipping run.")
+        return
+
+    post_generators = [
+        scholar.generate_scholar_post,
+        economy.generate_economy_post,
+        minecraft.generate_minecraft_post,
+        html.generate_html_post,
+        css.generate_css_post,
+        javascript.generate_javascript_post,
+        python.generate_python_post,
+        react.generate_react_post,
+        nodejs.generate_nodejs_post
+    ]
+
+    random.shuffle(post_generators)  # 순서 섞기
+
+    delays = sorted(random.sample(range(0, 180), len(post_generators)))  # 0~180분 중 랜덤 지연 (최대 3시간)
+
+    for i, generator in enumerate(post_generators):
+        if i > 0:
+            delay_minutes = delays[i] - delays[i - 1]
+            print(f"⏱ Waiting {delay_minutes} minutes...")
+            time.sleep(delay_minutes * 60)
+
+        try:
+            post = generator()
+            create_post(
+                title=post["title"],
+                content=post["content"],
+                category=post["category"],
+                tags=post["tags"],
+                code_block=post.get("code")
+            )
+        except Exception as e:
+            print(f"❌ Error posting from generator '{generator.__name__}':", e)
 
 if __name__ == "__main__":
     main()
