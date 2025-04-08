@@ -11,13 +11,13 @@ BLOGGER_API_KEY = "your-blogger-api-key"
 # 함수 정의
 def generate_scholar_post():
     # 학술적 포스트 생성 (OpenAI를 이용하여)
-    response = openai.Completion.create(
+    response = openai.completions.create(
         model="gpt-4-turbo",  # 최신 GPT-4 Turbo 모델 사용
         prompt="Write an academic blog post based on recent research in AI",  # 사용자 지정 프롬프트
         max_tokens=500,  # 더 긴 글을 생성할 수 있도록 토큰 수를 늘림
         temperature=0.7  # 다양한 출력값을 위해 온도 설정
     )
-    return response.choices[0].text.strip()
+    return response['choices'][0]['text'].strip()
 
 def generate_economy_post():
     # 경제 지표 포스트 생성 (웹 크롤링 및 분석)
