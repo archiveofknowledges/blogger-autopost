@@ -1,33 +1,37 @@
 # blogger-autopost/categories/minecraft.py
 
 def generate_minecraft_post(post_data):
-    title = f"Minecraft Server: {post_data['server_name']}"
+    title = f"Top Minecraft Mods, Servers, and Resource Packs for {post_data['year']}"
     
-    # 글을 길게 작성하는 방식 (서버 소개, 플레이 방법, 추천 모드 등)
+    # 마인크래프트 관련 긴 글 작성
     content = f"""
-    ## Minecraft Server: {post_data['server_name']}
+    ## Top Minecraft Mods, Servers, and Resource Packs for {post_data['year']}
     
-    ### Server Description
-    {post_data['server_description']}
+    ### Introduction to Minecraft Mods, Servers, and Resource Packs
+    {post_data['intro']}
     
-    ### How to Join
-    {post_data['server_join_instructions']}
+    ### Top Mods for {post_data['year']}
+    - **{post_data['mod_1_name']}:** {post_data['mod_1_features']}
+    - **{post_data['mod_2_name']}:** {post_data['mod_2_features']}
+    - **{post_data['mod_3_name']}:** {post_data['mod_3_features']}
     
-    ### Recommended Mods
-    {post_data['recommended_mods']}
+    ### Best Minecraft Servers for {post_data['year']}
+    - **{post_data['server_1_name']}:** {post_data['server_1_details']}
+    - **{post_data['server_2_name']}:** {post_data['server_2_details']}
     
-    ### Additional Resources
-    {post_data['additional_resources']}
+    ### Cool Resource Packs to Enhance Your Minecraft Experience
+    - **{post_data['resource_pack_1_name']}:** {post_data['resource_pack_1_description']}
+    - **{post_data['resource_pack_2_name']}:** {post_data['resource_pack_2_description']}
     
-    ### Conclusion
-    {post_data['server_conclusion']}
+    ### Conclusion and Tips
+    {post_data['conclusion_and_tips']}
     """
     
     post_content = {
         "title": title,
         "content": content,
         "category": "minecraft",
-        "tags": ["minecraft", post_data['server_name']],
+        "tags": ["minecraft", post_data['year']],
     }
     
     return post_content
