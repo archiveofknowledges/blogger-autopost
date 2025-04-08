@@ -2,7 +2,7 @@ import os
 import datetime
 import requests
 
-GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")  # GitHub Personal Access Token with gist scope
+GITHUB_TOKEN = os.environ.get("GIST_TOKEN")  # GitHub Personal Access Token with gist scope
 
 # ✅ 리포트 저장용 리스트
 post_log = []
