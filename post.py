@@ -32,11 +32,18 @@ def get_access_token():
                 "grant_type": "refresh_token",
             }
         )
+
+        # 디버깅용 출력 (구글 응답 본문 전체 확인)
+        print("🔍 Raw response from Google:")
+        print(response.status_code)
+        print(response.text)
+
         response.raise_for_status()
         return response.json()["access_token"]
     except Exception as e:
         print(f"❌ Error getting access token: {e}")
         return None
+
 
 # 포스트 업로드
 def create_post(title, content, category, access_token):
