@@ -2,7 +2,6 @@ import os
 import datetime
 import requests
 import openai
-from categories import scholar
 from categories import html
 
 # ✅ 환경변수
@@ -72,20 +71,10 @@ def create_post(title, content, category, tags, code_block=None):
     else:
         print(f"❌ Failed: {title} → {response.text}")
 
-# ✅ main(): scholar + html 1개씩 테스트 (랜덤 지연 없음)
+# ✅ main(): HTML 포스트만 테스트 (scholar 비활성화)
 def main():
-    print("🚀 Starting test post: scholar + html (no delay)")
+    print("🚀 Starting test post: html only (no delay)")
 
-    # Scholar 포스트 1개
-    scholar_post = scholar.generate_scholar_post()
-    create_post(
-        title=scholar_post["title"],
-        content=scholar_post["content"],
-        category=scholar_post["category"],
-        tags=scholar_post["tags"]
-    )
-
-    # HTML 포스트 1개
     html_post = html.generate_html_post()
     create_post(
         title=html_post["title"],
