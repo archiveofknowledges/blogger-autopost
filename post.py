@@ -11,14 +11,13 @@ BLOGGER_API_KEY = "your-blogger-api-key"
 # 함수 정의
 def generate_scholar_post():
     # 학술적 포스트 생성 (OpenAI를 이용하여)
-    response = openai.ChatCompletion.create(
-        model="gpt-4-turbo",  # 최신 GPT-4 Turbo 모델로 변경
-        messages=[{"role": "system", "content": "You are an AI that writes academic posts."},
-                  {"role": "user", "content": "Write an academic blog post based on recent research in AI."}],
-        max_tokens=500,  # 토큰 수를 늘려서 더 긴 글을 생성
-        temperature=0.7
+    response = openai.Completion.create(
+        model="gpt-4-turbo",  # 최신 GPT-4 Turbo 모델 사용
+        prompt="Write an academic blog post based on recent research in AI",  # 사용자 지정 프롬프트
+        max_tokens=500,  # 더 긴 글을 생성할 수 있도록 토큰 수를 늘림
+        temperature=0.7  # 다양한 출력값을 위해 온도 설정
     )
-    return response['choices'][0]['message']['content'].strip()
+    return response.choices[0].text.strip()
 
 def generate_economy_post():
     # 경제 지표 포스트 생성 (웹 크롤링 및 분석)
@@ -50,7 +49,7 @@ def create_post(title, content, category):
     
     # Blogger API 사용해서 포스트 업로드
     response = requests.post(
-        "https://www.googleapis.com/blogger/v3/blogs/2146078384292830084/posts/",
+        "https://www.googleapis.com/blogger/v3/blogs/your_blog_id/posts/",
         headers={"Authorization": f"Bearer {BLOGGER_API_KEY}"},
         json=post_data
     )
