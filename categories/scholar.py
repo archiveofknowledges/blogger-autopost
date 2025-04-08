@@ -1,40 +1,66 @@
 # categories/scholar.py
 
-def generate_scholar_post(post_data):
-    title = f"{post_data['paper_title']} - A Study on {post_data['study_topic']}"
+import openai
+import os
+import random
 
-    content = f"""
-<h2>{post_data['paper_title']} - A Study on {post_data['study_topic']}</h2>
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-<h3>Introduction</h3>
-<p>{post_data['intro']}</p>
+# 무작위 학술 주제 선택 리스트
+TOPICS = [
+    "transformer models in natural language processing",
+    "graph neural networks in biology",
+    "quantum computing in cryptography",
+    "machine learning in medical imaging",
+    "reinforcement learning for robotics",
+    "large language models and ethical AI",
+    "computer vision in autonomous vehicles",
+    "Bayesian optimization in hyperparameter tuning",
+    "generative AI for scientific discovery",
+    "federated learning in healthcare"
+]
 
-<h3>Literature Review</h3>
-<p>{post_data['literature_review']}</p>
+def generate_scholar_post():
+    topic = random.choice(TOPICS)
 
-<h3>Methodology</h3>
-<p>{post_data['methodology']}</p>
-
-<h3>Results and Discussion</h3>
-<p>{post_data['results_and_discussion']}</p>
-
-<h3>Conclusion and Future Work</h3>
-<p>{post_data['conclusion']}</p>
-
-<h3>References</h3>
-<p>{post_data['references']}</p>
-
-<p><em>Source: This summary is based on a combination of recent academic literature in the field of {post_data['study_topic']}. Please consult arXiv, Semantic Scholar, and Google Scholar for the original publications.</em></p>
+    prompt = f"""
+Write a detailed academic blog post targeting U.S. readers on the topic: "{topic}".
+The post should be 4–6 paragraphs long, well-structured with sections like Introduction, Methodology, Results, and Conclusion.
+Use a professional, scholarly tone. Include references to credible sources (e.g., arXiv, Google Scholar) at the end.
+Do not use overly technical math. Prioritize clarity and SEO-friendly formatting.
+Title should reflect the topic concisely.
 """
 
-    tags = [
-        "AI", "research", "deep learning", "machine learning", 
-        post_data["study_topic"], "academic summary", "scholarly analysis"
-    ]
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "system", "content": "You are an academic blog writer."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=1400
+        )
 
-    return {
-        "title": title,
-        "content": content,
-        "category": "scholar",
-        "tags": tags
-    }
+        content = response.choices[0].message.content.strip()
+        title = f"Exploring {topic.capitalize()}"
+
+        tags = [
+            "AI research", "academic", "machine learning", "deep learning",
+            "GPT", topic.split()[0], "US education"
+        ]
+
+        return {
+            "title": title,
+            "content": content,
+            "category": "scholar",
+            "tags": tags
+        }
+
+    except Exception as e:
+        return {
+            "title": f"AI Research Topic (Error)",
+            "content": f"⚠️ Failed to generate post due to: {e}",
+            "category": "scholar",
+            "tags": ["error", "scholar"]
+        }
