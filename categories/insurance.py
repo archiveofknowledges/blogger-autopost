@@ -1,20 +1,35 @@
-def fetch_posts(count=2):
-    insurance_topics = [
-        "Best pet insurance plans in the US",
-        "Top car insurance for young drivers",
-        "Dental insurance options for 2025",
-        "Lemonade vs HealthyPaws comparison",
-        "Is travel insurance worth it in 2025?"
-    ]
+# blogger-autopost/categories/insurance.py
 
-    posts = []
-    for i in range(min(count, len(insurance_topics))):
-        posts.append({
-            "title": insurance_topics[i],
-            "summary": f"This post explores: {insurance_topics[i]}. It compares available plans, costs, coverage, and benefits for U.S. users seeking practical insurance choices.",
-            "source": "https://example.com",  # optional placeholder
-            "topics": ["insurance", "finance", "consumer choice"],
-            "category": "insurance"
-        })
-
-    return posts
+def generate_insurance_post(post_data):
+    title = f"Best {post_data['insurance_type']} Insurance Plans for 2025"
+    
+    # 보험 관련 긴 글 작성
+    content = f"""
+    ## Best {post_data['insurance_type']} Insurance Plans for 2025
+    
+    ### Why {post_data['insurance_type']} Insurance is Important
+    {post_data['importance']}
+    
+    ### Top Insurance Plans for {post_data['insurance_type']} in 2025
+    - **{post_data['insurance_plan_1_name']}:** {post_data['insurance_plan_1_features']}
+    - **{post_data['insurance_plan_2_name']}:** {post_data['insurance_plan_2_features']}
+    - **{post_data['insurance_plan_3_name']}:** {post_data['insurance_plan_3_features']}
+    
+    ### How to Choose the Right Insurance Plan
+    {post_data['selection_tips']}
+    
+    ### Pros and Cons of {post_data['insurance_type']} Insurance
+    {post_data['pros_and_cons']}
+    
+    ### Conclusion
+    {post_data['conclusion']}
+    """
+    
+    post_content = {
+        "title": title,
+        "content": content,
+        "category": "insurance",
+        "tags": ["insurance", post_data['insurance_type']],
+    }
+    
+    return post_content
