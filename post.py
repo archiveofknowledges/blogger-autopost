@@ -8,16 +8,22 @@ import matplotlib.pyplot as plt
 OPENAI_API_KEY = "your-openai-api-key"
 BLOGGER_API_KEY = "your-blogger-api-key"
 
+# OpenAI API 초기화
+openai.api_key = OPENAI_API_KEY
+
 # 함수 정의
 def generate_scholar_post():
     # 학술적 포스트 생성 (OpenAI를 이용하여)
-    response = openai.Completion.create(
-        engine="gpt-4",  # 최신 버전 사용
-        prompt="Write an academic blog post based on recent research in AI",
-        max_tokens=400,
+    response = openai.ChatCompletion.create(
+        model="gpt-4",  # 모델 버전 설정
+        messages=[
+            {"role": "system", "content": "You are an academic assistant."},
+            {"role": "user", "content": "Write an academic blog post based on recent research in AI"}
+        ],
+        max_tokens=200,
         temperature=0.7
     )
-    return response.choices[0].text.strip()
+    return response['choices'][0]['message']['content'].strip()
 
 def generate_economy_post():
     # 경제 지표 포스트 생성 (웹 크롤링 및 분석)
@@ -36,16 +42,6 @@ def generate_minecraft_post():
 def generate_financial_post():
     # 대출, 세금, 보험 관련 포스트
     post = "Understanding Mortgage Rates and How They Affect You"
-    return post
-
-def generate_insurance_post():
-    # 보험 관련 포스트
-    post = "Everything You Need to Know About Life Insurance in 2025"
-    return post
-
-def generate_credit_card_post():
-    # 신용카드 관련 포스트
-    post = "The Best Credit Cards for Cashback in 2025"
     return post
 
 def create_post(title, content, category):
@@ -71,24 +67,19 @@ def create_post(title, content, category):
 
 def main():
     # 각 카테고리별 포스트 생성
-    scholar_posts = [generate_scholar_post() for _ in range(10)]  # 학술적 포스트 10개
+    scholar_post = generate_scholar_post()
     economy_post = generate_economy_post()
     minecraft_post = generate_minecraft_post()
     financial_post = generate_financial_post()
-    insurance_post = generate_insurance_post()
-    credit_card_post = generate_credit_card_post()
 
     # 포스트 제목 설정
     posts = [
-        {"title": "AI Research Trends", "content": random.choice(scholar_posts), "category": "Scholar"},
+        {"title": "AI Research Trends", "content": scholar_post, "category": "Scholar"},
         {"title": f"Economy Update [{datetime.datetime.now().strftime('%d.%m.%y')}]", "content": economy_post, "category": "Economy"},
         {"title": "Top Minecraft Mods for 2025", "content": minecraft_post, "category": "Minecraft"},
-        {"title": "Understanding Mortgage Rates", "content": financial_post, "category": "Financial"},
-        {"title": "Life Insurance 2025 Guide", "content": insurance_post, "category": "Insurance"},
-        {"title": "Best Credit Cards for Cashback in 2025", "content": credit_card_post, "category": "Credit Cards"}
+        {"title": "Understanding Mortgage Rates", "content": financial_post, "category": "Financial"}
     ]
 
-    # 포스트 생성 및 업로드
     for post in posts:
         create_post(post["title"], post["content"], post["category"])
 
