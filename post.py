@@ -94,7 +94,7 @@ def auto_post():
             
             if formatted_post:
                 print(f"✅ Posting: {title}")
-                post_to_blogger(blog_id="YOUR_BLOG_ID", title=formatted_post["title"], content=formatted_post["content"])
+                post_to_blogger(blog_id="2146078384292830084", title=formatted_post["title"], content=formatted_post["content"])
             else:
                 print(f"❌ Failed to format post: {title}")
 
