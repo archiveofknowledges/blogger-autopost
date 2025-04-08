@@ -1,23 +1,23 @@
 # blogger-autopost/categories/economy.py
 
 def generate_economy_post(post_data):
-    title = f"Economic Indicator: {post_data['indicator_name']}"
+    title = f"{post_data['indicator_name']} - Economic Data for {post_data['country']} on {post_data['date']}"
     
-    # 글을 길게 작성하는 방식 (예: 인용, 설명, 배경, 세부사항 등을 포함)
+    # 경제 지표 관련 긴 글 작성
     content = f"""
-    ## {post_data['indicator_name']} - {post_data['indicator_title']}
+    ## {post_data['indicator_name']} - Economic Data for {post_data['country']} on {post_data['date']}
     
     ### Overview
-    {post_data['indicator_summary']}
+    {post_data['overview']}
     
-    ### Analysis
-    {post_data['indicator_analysis']}
+    ### Latest Data
+    - **{post_data['indicator_name']}:** {post_data['indicator_value']}
     
-    ### Implications
-    {post_data['indicator_implications']}
+    ### Impact of the Indicator on the Economy
+    {post_data['impact_on_economy']}
     
     ### Conclusion
-    {post_data['indicator_conclusion']}
+    {post_data['conclusion']}
     """
     
     post_content = {
