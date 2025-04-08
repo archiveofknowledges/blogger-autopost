@@ -1,28 +1,36 @@
-import requests
+# blogger-autopost/categories/scholar.py
 
-def fetch_posts(count=3, keywords=["AI"]):
-    results = []
-
-    for keyword in keywords:
-        url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={keyword}&limit={count}&fields=title,abstract,year,authors,url,topics"
-        try:
-            response = requests.get(url)
-            data = response.json().get("data", [])
-            if not data:
-                print(f"⚠️ No results for keyword: {keyword}")
-                continue
-            for item in data:
-                results.append({
-                    "title": item.get("title", "Untitled"),
-                    "summary": item.get("abstract", "No abstract available."),
-                    "year": item.get("year"),
-                    "authors": [a.get("name") for a in item.get("authors", [])],
-                    "topics": [t.get("topic") for t in item.get("topics", [])],
-                    "source": item.get("url"),
-                    "category": "scholar"
-                })
-        except Exception as e:
-            print(f"[ERROR] Scholar fetch failed: {e}")
-
-    print(f"📚 Total papers collected: {len(results)}")
-    return results[:count]
+def generate_scholar_post(post_data):
+    title = f"{post_data['paper_title']} - A Study on {post_data['study_topic']}"
+    
+    # 학술적 내용의 긴 글 작성
+    content = f"""
+    ## {post_data['paper_title']} - A Study on {post_data['study_topic']}
+    
+    ### Introduction
+    {post_data['intro']}
+    
+    ### Literature Review
+    {post_data['literature_review']}
+    
+    ### Methodology
+    {post_data['methodology']}
+    
+    ### Results and Discussion
+    {post_data['results_and_discussion']}
+    
+    ### Conclusion and Future Work
+    {post_data['conclusion']}
+    
+    ### References
+    {post_data['references']}
+    """
+    
+    post_content = {
+        "title": title,
+        "content": content,
+        "category": "scholar",
+        "tags": ["scholar", post_data['study_topic']],
+    }
+    
+    return post_content
