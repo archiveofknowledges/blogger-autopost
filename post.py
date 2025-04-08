@@ -36,11 +36,22 @@ def get_access_token():
         return None
 
 # ✅ Blogger 포스트 업로드
-def create_post(title, content, category, tags):
+def create_post(title, content, category, tags, code_block=None):
     access_token = get_access_token()
     if not access_token:
         print("❌ Cannot post without access token.")
         return
+
+    # ✅ 코드가 있으면 복사 버튼과 함께 본문에 추가
+    if code_block:
+        content += f"""
+<h3>Copyable Code Example</h3>
+<div style='position: relative;'>
+  <button onclick=\"navigator.clipboard.writeText(this.nextElementSibling.innerText)\" 
+          style='position:absolute;right:0;top:0;'>📋 Copy</button>
+  {code_block}
+</div>
+"""
 
     url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/"
     headers = {
@@ -61,10 +72,11 @@ def create_post(title, content, category, tags):
     else:
         print(f"❌ Failed: {title} → {response.text}")
 
-# ✅ main(): scholar + html 1개씩 테스트
+# ✅ main(): scholar + html 1개씩 테스트 (랜덤 지연 없음)
 def main():
     print("🚀 Starting test post: scholar + html (no delay)")
 
+    # Scholar 포스트 1개
     scholar_post = scholar.generate_scholar_post()
     create_post(
         title=scholar_post["title"],
@@ -73,12 +85,14 @@ def main():
         tags=scholar_post["tags"]
     )
 
+    # HTML 포스트 1개
     html_post = html.generate_html_post()
     create_post(
         title=html_post["title"],
         content=html_post["content"],
         category=html_post["category"],
-        tags=html_post["tags"]
+        tags=html_post["tags"],
+        code_block=html_post.get("code")
     )
 
 if __name__ == "__main__":
