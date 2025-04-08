@@ -2,7 +2,7 @@ name: 자동 블로그 포스팅
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # 매일 오전 9시 (KST)
+    - cron: '0 0 * * *'  # 매일 00:00 UTC = 한국시간 09:00
   workflow_dispatch:
 
 jobs:
@@ -14,8 +14,8 @@ jobs:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
       REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}  # 혹시 사용 중이면 함께 유지
-      BLOGGER_API_KEY: ${{ secrets.BLOGGER_API_KEY }}  # 사용하지 않으면 삭제 가능
+      BLOGGER_API_KEY: ${{ secrets.BLOGGER_API_KEY }}  # 사용 안 하면 삭제 가능
+      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}        # 사용 안 하면 삭제 가능
 
     steps:
       - name: Checkout repository
