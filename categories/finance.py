@@ -1,35 +1,61 @@
-# blogger-autopost/categories/finance.py
+# categories/finance.py
 
-def generate_finance_post(post_data):
-    title = f"Best Investment Strategies for {post_data['target_group']} in 2025"
-    
-    # 재정 관련 긴 글 작성
-    content = f"""
-    ## Best Investment Strategies for {post_data['target_group']} in 2025
-    
-    ### Introduction
-    {post_data['intro']}
-    
-    ### Top Investment Strategies
-    - **{post_data['strategy_1_name']}:** {post_data['strategy_1_details']}
-    - **{post_data['strategy_2_name']}:** {post_data['strategy_2_details']}
-    - **{post_data['strategy_3_name']}:** {post_data['strategy_3_details']}
-    
-    ### How to Start Investing
-    {post_data['investment_tips']}
-    
-    ### Risks and Rewards of Investing
-    {post_data['risks_and_rewards']}
-    
-    ### Conclusion
-    {post_data['conclusion']}
-    """
-    
-    post_content = {
-        "title": title,
-        "content": content,
-        "category": "finance",
-        "tags": ["finance", post_data['target_group']],
-    }
-    
-    return post_content
+import openai
+import os
+import random
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+TARGET_GROUPS = [
+    "Millennials looking to invest in ETFs",
+    "Young professionals starting retirement planning",
+    "Families managing monthly household budgets",
+    "Seniors preparing for fixed-income retirement",
+    "Self-employed individuals seeking tax-efficient investments"
+]
+
+def generate_finance_post():
+    target = random.choice(TARGET_GROUPS)
+
+    prompt = f"""
+Write an informative blog post targeting U.S. readers about smart financial strategies for: "{target}".
+Include 2–3 investment or budgeting tips, and mention specific tools, platforms, or institutions (e.g., Fidelity, Vanguard, Robinhood).
+Explain each point in a clear, practical way using 4–6 structured paragraphs.
+Include a short section on common mistakes to avoid, and close with a recommended next step.
+End with a line like: "Source: Based on current trends in U.S. personal finance from 2025 reports by NerdWallet and Investopedia."
+Use an accessible but professional tone.
+"""
+
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "system", "content": "You are a personal finance advisor writing helpful blog posts for U.S. readers."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.75,
+            max_tokens=1300
+        )
+
+        content = response.choices[0].message.content.strip()
+        title = f"Smart Financial Planning for {target}"
+
+        tags = [
+            "finance", "investment", "retirement", "ETFs", "Roth IRA",
+            "budgeting", "money management", "personal finance"
+        ]
+
+        return {
+            "title": title,
+            "content": content,
+            "category": "finance",
+            "tags": tags
+        }
+
+    except Exception as e:
+        return {
+            "title": "Finance Strategy Post (Error)",
+            "content": f"⚠️ Failed to generate finance post due to: {e}",
+            "category": "finance",
+            "tags": ["finance", "error"]
+        }
