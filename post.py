@@ -2,6 +2,7 @@ import openai
 import requests
 import datetime
 import random
+import matplotlib.pyplot as plt
 
 # 필요한 API와 키 설정
 OPENAI_API_KEY = "your-openai-api-key"
@@ -9,17 +10,14 @@ BLOGGER_API_KEY = "your-blogger-api-key"
 
 # 함수 정의
 def generate_scholar_post():
-    # 최신 OpenAI API를 이용하여 학술적 포스트 생성
-    response = openai.ChatCompletion.create(
-        model="gpt-4",  # 원하는 모델을 입력하세요 (예: gpt-4)
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Write an academic blog post based on recent research in AI"}
-        ],
-        max_tokens=200,
+    # 학술적 포스트 생성 (OpenAI를 이용하여)
+    response = openai.Completion.create(
+        model="text-davinci-003",  # 최신 모델을 사용하여 텍스트 생성
+        prompt="Write an academic blog post based on recent research in AI",
+        max_tokens=500,  # 토큰 수를 늘려서 더 긴 글을 생성
         temperature=0.7
     )
-    return response['choices'][0]['message']['content'].strip()
+    return response.choices[0].text.strip()
 
 def generate_economy_post():
     # 경제 지표 포스트 생성 (웹 크롤링 및 분석)
