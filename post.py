@@ -9,7 +9,11 @@ def get_new_access_token():
     client_id = os.getenv("CLIENT_ID")           # GitHub Secrets에서 환경변수로 받아옴
     client_secret = os.getenv("CLIENT_SECRET")   # GitHub Secrets에서 환경변수로 받아옴
 
-    # 환경변수가 누락되었는지 확인
+    # 디버깅: 환경변수 값 확인
+    print(f"REFRESH_TOKEN: {refresh_token}")
+    print(f"CLIENT_ID: {client_id}")
+    print(f"CLIENT_SECRET: {client_secret}")
+
     if not refresh_token or not client_id or not client_secret:
         print("❌ Missing required credentials.")
         return None
