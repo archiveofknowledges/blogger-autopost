@@ -1,8 +1,9 @@
-POST_SETTINGS = {
+### POST_SETTINGS = {
     "TIMEZONE": "Asia/Seoul",
     "POST_TIME_HOUR": 9,
     "POST_TIME_MINUTE": 0,
-}
+} 
+###
 
 BLOG_ID = "archiveofknowledges"
 
