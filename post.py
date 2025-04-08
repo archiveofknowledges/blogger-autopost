@@ -8,22 +8,16 @@ import matplotlib.pyplot as plt
 OPENAI_API_KEY = "your-openai-api-key"
 BLOGGER_API_KEY = "your-blogger-api-key"
 
-# OpenAI API 초기화
-openai.api_key = OPENAI_API_KEY
-
 # 함수 정의
 def generate_scholar_post():
     # 학술적 포스트 생성 (OpenAI를 이용하여)
-    response = openai.ChatCompletion.create(
-        model="gpt-4",  # 모델 버전 설정
-        messages=[
-            {"role": "system", "content": "You are an academic assistant."},
-            {"role": "user", "content": "Write an academic blog post based on recent research in AI"}
-        ],
+    response = openai.completions.create(
+        model="text-davinci-003",
+        prompt="Write an academic blog post based on recent research in AI",
         max_tokens=200,
         temperature=0.7
     )
-    return response['choices'][0]['message']['content'].strip()
+    return response.choices[0].text.strip()
 
 def generate_economy_post():
     # 경제 지표 포스트 생성 (웹 크롤링 및 분석)
