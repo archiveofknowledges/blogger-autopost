@@ -1,102 +1,81 @@
-import os
+import openai
 import requests
-import json
-from formatter import format_post
+import datetime
+import random
+import matplotlib.pyplot as plt
 
-# Refresh Token을 사용하여 새로운 Access Token을 발급받는 함수
-def get_new_access_token():
-    refresh_token = os.getenv("REFRESH_TOKEN")  # GitHub Secrets에서 환경변수로 받아옴
-    client_id = os.getenv("CLIENT_ID")           # GitHub Secrets에서 환경변수로 받아옴
-    client_secret = os.getenv("CLIENT_SECRET")   # GitHub Secrets에서 환경변수로 받아옴
+# 필요한 API와 키 설정
+OPENAI_API_KEY = "your-openai-api-key"
+BLOGGER_API_KEY = "your-blogger-api-key"
 
-    # 디버깅: 환경변수 값 확인
-    print(f"REFRESH_TOKEN: {refresh_token}")
-    print(f"CLIENT_ID: {client_id}")
-    print(f"CLIENT_SECRET: {client_secret}")
+# 함수 정의
+def generate_scholar_post():
+    # 학술적 포스트 생성 (OpenAI를 이용하여)
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt="Write an academic blog post based on recent research in AI",
+        max_tokens=200,
+        temperature=0.7
+    )
+    return response.choices[0].text.strip()
 
-    if not refresh_token or not client_id or not client_secret:
-        print("❌ Missing required credentials.")
-        return None
+def generate_economy_post():
+    # 경제 지표 포스트 생성 (웹 크롤링 및 분석)
+    response = requests.get("https://api.exchangerate-api.com/v4/latest/USD")
+    data = response.json()
+    economy_data = data['rates']
+    post = f"Today's economy update: USD to EUR exchange rate is {economy_data['EUR']}."
+    return post
 
-    # Access Token 갱신을 위한 URL
-    url = "https://oauth2.googleapis.com/token"
-    data = {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "refresh_token": refresh_token,
-        "grant_type": "refresh_token"
+def generate_minecraft_post():
+    # 마인크래프트 관련 추천 글 생성
+    post = "Top Minecraft Mods for 2025"
+    mods = ["Mod 1", "Mod 2", "Mod 3"]
+    return f"Check out these amazing Minecraft mods: {', '.join(mods)}."
+
+def generate_financial_post():
+    # 대출, 세금, 보험 관련 포스트
+    post = "Understanding Mortgage Rates and How They Affect You"
+    return post
+
+def create_post(title, content, category):
+    # 포스트를 생성하는 함수
+    post_data = {
+        'title': title,
+        'content': content,
+        'category': category,
+        'date': datetime.datetime.now().strftime("%Y-%m-%d")
     }
-
-    # POST 요청을 보내서 새로운 Access Token을 받음
-    response = requests.post(url, data=data)
-
-    if response.status_code == 200:
-        access_token = response.json().get("access_token")
-        print("✅ New Access Token received!")
-        return access_token
-    else:
-        print(f"❌ Failed to refresh token: {response.text}")
-        return None
-
-# Blogger에 포스트를 올리는 함수
-def post_to_blogger(blog_id, title, content):
-    # 새로운 Access Token을 발급받고 사용
-    access_token = get_new_access_token()
-    if not access_token:
-        print("❌ No access token available.")
-        return False
-
-    url = f"https://www.googleapis.com/blogger/v3/blogs/{blog_id}/posts/"
     
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "kind": "blogger#post",
-        "title": title,
-        "content": content
-    }
-
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-
+    # Blogger API 사용해서 포스트 업로드
+    response = requests.post(
+        "https://www.googleapis.com/blogger/v3/blogs/your_blog_id/posts/",
+        headers={"Authorization": f"Bearer {BLOGGER_API_KEY}"},
+        json=post_data
+    )
+    
     if response.status_code == 200:
-        print(f"✅ Successfully posted: {title}")
-        return True
+        print(f"Successfully posted: {title}")
     else:
-        print(f"❌ Failed to post: {title}")
-        print(f"📬 Status code: {response.status_code}")
-        print(f"📄 Response: {response.text}")
-        return False
+        print(f"Failed to post: {title}, Error: {response.text}")
 
-# 포스트를 가져오는 함수 (예시로 더미 데이터를 반환)
-def fetch_posts(category, count=10, countries=None, keywords=None):
-    # 이 부분은 실제로 데이터를 가져오는 로직으로 교체해야 해
-    papers = [
-        {"title": "Hide and Seek in Noise Labels: Noise-Robust Collaborative Active Learning with LLM-Powered Assistance", "abstract": "This paper explores..."},
-        {"title": "Robustly identifying concepts introduced during chat fine-tuning using crosscoders", "abstract": "The research investigates..."},
-        # 더 많은 논문들 추가
+def main():
+    # 각 카테고리별 포스트 생성
+    scholar_post = generate_scholar_post()
+    economy_post = generate_economy_post()
+    minecraft_post = generate_minecraft_post()
+    financial_post = generate_financial_post()
+
+    # 포스트 제목 설정
+    posts = [
+        {"title": "AI Research Trends", "content": scholar_post, "category": "Scholar"},
+        {"title": f"Economy Update [{datetime.datetime.now().strftime('%d.%m.%y')}]", "content": economy_post, "category": "Economy"},
+        {"title": "Top Minecraft Mods for 2025", "content": minecraft_post, "category": "Minecraft"},
+        {"title": "Understanding Mortgage Rates", "content": financial_post, "category": "Financial"}
     ]
-    return papers
 
-# 전체 자동 포스팅 프로세스를 관리하는 함수
-def auto_post():
-    categories = ['scholar_arxiv', 'economy', 'insurance', 'credit_cards']
-    for category in categories:
-        posts = fetch_posts(category)  # 데이터를 가져오는 부분
-        for post in posts:
-            title = post["title"]
-            abstract = post["abstract"]
-
-            # format_post를 통해 포스트 생성
-            formatted_post = format_post(title, abstract, category=category, tags=["tag1", "tag2"], date="2025-04-08")
-            
-            if formatted_post:
-                print(f"✅ Posting: {title}")
-                post_to_blogger(blog_id="2146078384292830084", title=formatted_post["title"], content=formatted_post["content"])
-            else:
-                print(f"❌ Failed to format post: {title}")
+    for post in posts:
+        create_post(post["title"], post["content"], post["category"])
 
 if __name__ == "__main__":
-    auto_post()
+    main()
