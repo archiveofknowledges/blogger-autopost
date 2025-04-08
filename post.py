@@ -4,13 +4,13 @@ import os
 import requests
 import random
 
-# Secrets
+# 환경 변수 (GitHub Secrets에서 불러옴)
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
 BLOG_ID = "2146078384292830084"
 
-# 카테고리별 포스트 수
+# 카테고리별 포스트 수 설정
 CATEGORY_CONFIG = {
     "scholar": 10,
     "economy": 1,
@@ -20,7 +20,13 @@ CATEGORY_CONFIG = {
     "insurance": 1
 }
 
-# 토큰 요청
+# 디버깅용 환경 변수 출력
+print("🔎 ENV CHECK")
+print("CLIENT_ID:", CLIENT_ID[:4] if CLIENT_ID else "❌ Missing")
+print("CLIENT_SECRET:", CLIENT_SECRET[:4] if CLIENT_SECRET else "❌ Missing")
+print("REFRESH_TOKEN:", REFRESH_TOKEN[:4] if REFRESH_TOKEN else "❌ Missing")
+
+# Blogger access_token 갱신
 def get_access_token():
     try:
         response = requests.post(
@@ -33,7 +39,7 @@ def get_access_token():
             }
         )
 
-        # 디버깅용 출력 (구글 응답 본문 전체 확인)
+        # Google 응답 전체 출력 (디버깅용)
         print("🔍 Raw response from Google:")
         print(response.status_code)
         print(response.text)
@@ -44,8 +50,7 @@ def get_access_token():
         print(f"❌ Error getting access token: {e}")
         return None
 
-
-# 포스트 업로드
+# Blogger 포스트 업로드
 def create_post(title, content, category, access_token):
     post_data = {
         "title": title,
@@ -70,7 +75,7 @@ def create_post(title, content, category, access_token):
     except Exception as e:
         print(f"❌ Error posting '{title}': {e}")
 
-# 더미 post_data 자동 생성 (테스트용 또는 실제 추후 모듈 대체 가능)
+# 테스트용 dummy 데이터 생성
 def generate_dummy_data(category):
     if category == "scholar":
         return {
@@ -96,7 +101,7 @@ def generate_dummy_data(category):
     else:
         return {}
 
-# 메인 루프
+# 메인 실행 루틴
 def main():
     access_token = get_access_token()
     if not access_token:
