@@ -1,15 +1,30 @@
 import openai
 import os
+import random
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 def generate_html_post():
+    # ✅ 다양한 HTML 주제 리스트
+    topics = [
+        "Creating a Basic HTML Document",
+        "Understanding HTML Headings and Paragraphs",
+        "Working with Images in HTML",
+        "Creating Lists and Tables in HTML",
+        "Building Forms with Input Fields",
+        "Using Links and Anchor Tags",
+        "Understanding HTML Semantics",
+        "Embedding Videos and Media",
+        "Structuring Web Pages with HTML5 Elements",
+        "Best Practices for Accessible HTML"
+    ]
+    selected_topic = random.choice(topics)
+
     prompt = (
-        "You are a helpful web development tutor. Write a detailed HTML tutorial blog post "
-        "on a useful beginner topic. Format the post in HTML using <h2>, <h3>, and <p> tags. "
-        "Also include a separate code block using <pre><code> with class 'language-html'. "
-        "Output two fields: one for the main explanation text, and one only for the code block. "
-        "Avoid using Markdown."
+        f"You are a helpful web development tutor. Write a detailed HTML tutorial blog post on the topic: '{selected_topic}'. "
+        "Respond using only raw HTML, not Markdown. Use <h2> for title, <h3> for section headings, and wrap each paragraph in <p> tags. "
+        "Include a single <pre><code class='language-html'>...</code></pre> code block separately. Do not use triple backticks. "
+        "This output should be usable directly in a Blogger HTML post."
     )
 
     response = openai.chat.completions.create(
@@ -21,7 +36,6 @@ def generate_html_post():
 
     full_content = response.choices[0].message.content.strip()
 
-    # Split response into content and code block (rudimentary)
     if "<pre><code" in full_content:
         parts = full_content.split("<pre><code", 1)
         content = parts[0].strip()
@@ -31,10 +45,10 @@ def generate_html_post():
         code_block = ""
 
     post = {
-        "title": "Getting Started with HTML Forms",
+        "title": selected_topic,
         "content": content,
         "code": code_block,
         "category": "html",
-        "tags": ["HTML", "Forms", "Beginner", "Web Development", "Tutorial"]
+        "tags": ["HTML", "Web Development", "Tutorial", "Beginner", "Frontend"]
     }
     return post
