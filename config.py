@@ -1,18 +1,11 @@
-"""
-POST_SETTINGS = {
-    "TIMEZONE": "Asia/Seoul",
-    "POST_TIME_HOUR": 9,
-    "POST_TIME_MINUTE": 0,
-} 
-"""
+import openai
 
-BLOG_ID = "archiveofknowledges"
+# OpenAI API 키 설정
+OPENAI_API_KEY = "your-openai-api-key"
+openai.api_key = OPENAI_API_KEY
 
-CATEGORIES = {
-    "scholar_arxiv": {"count": 10},
-    "economy": {"count": 1, "countries": ["United States"]},
-    "insurance": {"count": 1},
-    "credit_cards": {"count": 1},
-}
+# Blogger API 키 설정
+BLOGGER_API_KEY = "your-blogger-api-key"
 
-OPENAI_MODEL = "gpt-4-turbo"
+# 기타 설정 값들
+BLOG_ID = "your_blog_id"
