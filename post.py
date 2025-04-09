@@ -143,9 +143,10 @@ def main():
 
         try:
             post = generator()
+            formatted_content = format_post_content(post["content"])  # 내용 포맷화
             create_post(
                 title=post["title"],
-                content=post["content"],
+                content=formatted_content,
                 category=post["category"],
                 tags=post["tags"],
                 code_block=post.get("code")
@@ -156,6 +157,16 @@ def main():
     save_log_to_gist()
     send_email_report()
 
+def format_post_content(content):
+    """
+    주어진 콘텐츠를 HTML로 깔끔하게 형식을 정리하여 반환
+    """
+    content = content.replace("\n", "<br>")  # 줄 바꿈을 HTML <br>로 변환
+
+    # 문단을 <p> 태그로 감싸기
+    content = "<p>" + content.replace("\n\n", "</p><p>") + "</p>"
+
+    return content
 
 if __name__ == "__main__":
     main()
