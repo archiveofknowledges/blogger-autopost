@@ -3,8 +3,10 @@ import datetime
 import requests
 import openai
 import time
+import random
 
-from categories import scholar
+from categories import scholar, economy, minecraft
+from categories import html, css, javascript, python, react, nodejs, health
 from post_logger import log_post, save_log_to_gist
 from email_reporter import send_email_report
 
@@ -63,21 +65,25 @@ def get_access_token():
         print("❌ Failed to get access token:", response.text)
         return None
 
-# ✅ 포스트 업로드
+# ✅ Blogger 포스트 업로드
 def create_post(title, content, category, tags, code_block=None):
     access_token = get_access_token()
     if not access_token:
         print("❌ Cannot post without access token.")
         return
 
-    # ✅ Unsplash 이미지 삽입
+    # 썸네일 이미지 삽입
     image_url, photographer = fetch_unsplash_image(title)
     if image_url and photographer:
-        image_html = f'''<img src="{image_url}" alt="{title}" style="width:100%;max-width:720px;margin-bottom:20px;border-radius:8px;">
-<p style="font-size:0.9em;color:#888;">Photo by {photographer} on <a href="https://unsplash.com" target="_blank">Unsplash</a></p><br>'''
+        image_html = f'''
+<img src="{image_url}" alt="{title}" style="width:100%;max-width:720px;margin-bottom:20px;border-radius:8px;">
+<p style="font-size:0.9em;color:#888;">
+Photo by {photographer} on <a href="https://unsplash.com" target="_blank">Unsplash</a>
+</p><br>
+'''
         content = image_html + content
 
-    # ✅ 코드 블록 삽입
+    # 코드 블럭 삽입
     if code_block:
         content += f"""
 <style>
@@ -107,7 +113,7 @@ def create_post(title, content, category, tags, code_block=None):
 
 <h3>Copyable Code Example</h3>
 <div style='position: relative; margin-top: 1em;'>
-  <button onclick=\"copyCode(this)\" class='copy-button'>Copy</button>
+  <button onclick="copyCode(this)" class='copy-button'>Copy</button>
   <pre class='copy-code-block'>{code_block}</pre>
 </div>
 
@@ -143,30 +149,69 @@ function copyCode(button) {{
     else:
         print(f"❌ Failed: {title} → {response.text}")
 
-# ✅ 메인: 테스트용 1개 포스트만 즉시 업로드
-def main():
-    print("🚀 Test post mode - uploading 1 post only")
-
-    try:
-        post = scholar.generate_scholar_post()
-        formatted_content = format_post_content(post["content"])
-        create_post(
-            title=post["title"],
-            content=formatted_content,
-            category=post["category"],
-            tags=post["tags"],
-            code_block=post.get("code")
-        )
-    except Exception as e:
-        print(f"❌ Error generating post:", e)
-
-    save_log_to_gist()
-    send_email_report()
-
+# ✅ HTML 콘텐츠 포맷팅
 def format_post_content(content):
     content = content.replace("\n", "<br>")
     content = "<p>" + content.replace("<br><br>", "</p><p>") + "</p>"
     return content
+
+# ✅ main(): 무작위 순서 + 무작위 지연 간격
+def main():
+    print("🚀 Starting randomized daily auto-post")
+
+    now = datetime.datetime.utcnow()
+    if not (now.hour == 0 and now.minute <= 10):
+        print("⏳ Not close enough to 00:00 UTC. Skipping run.")
+        return
+
+    post_generators = []
+    categories = [scholar, economy, minecraft, html, css, javascript, python, react, nodejs, health]
+
+    for category in categories:
+        count = random.randint(1, 3) if category in [scholar, python, economy, health] else 1
+        generator = (
+            category.generate_health_post if category == health
+            else category.generate_scholar_post if category == scholar
+            else category.generate_economy_post if category == economy
+            else category.generate_python_post if category == python
+            else category.generate_minecraft_post if category == minecraft
+            else category.generate_html_post if category == html
+            else category.generate_css_post if category == css
+            else category.generate_javascript_post if category == javascript
+            else category.generate_react_post if category == react
+            else category.generate_nodejs_post
+        )
+        post_generators.extend([generator] * count)
+
+    random.shuffle(post_generators)
+    delays = sorted(random.sample(range(30, 180), len(post_generators)))
+    start_time = time.time()
+
+    for i, generator in enumerate(post_generators):
+        if i > 0:
+            delay_minutes = delays[i] - delays[i - 1]
+            print(f"⏱ Waiting {delay_minutes} minutes...")
+            time.sleep(delay_minutes * 60)
+
+        try:
+            post = generator()
+            formatted_content = format_post_content(post["content"])
+            create_post(
+                title=post["title"],
+                content=formatted_content,
+                category=post["category"],
+                tags=post["tags"],
+                code_block=post.get("code")
+            )
+        except Exception as e:
+            print(f"❌ Error posting from generator '{generator.__name__}':", e)
+
+        if time.time() - start_time > 86400:
+            print("❌ Exceeded 24-hour limit. Exiting...")
+            break
+
+    save_log_to_gist()
+    send_email_report()
 
 if __name__ == "__main__":
     main()
