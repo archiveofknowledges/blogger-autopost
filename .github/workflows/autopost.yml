@@ -16,6 +16,12 @@ jobs:
       REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
       BLOGGER_API_KEY: ${{ secrets.BLOGGER_API_KEY }}  # 사용 안 하면 삭제 가능
       ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}        # 사용 안 하면 삭제 가능
+      UNSPLASH_KEY: ${{ secrets.UNSPLASH_KEY }}
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+      EMAIL_USER: ${{ secrets.EMAIL_USER }}
+      EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+      TO_EMAIL: ${{ secrets.TO_EMAIL }}
+
 
     steps:
       - name: Checkout repository
