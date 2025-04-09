@@ -7,6 +7,7 @@ import random
 
 from categories import scholar, economy, minecraft
 from categories import html, css, javascript, python, react, nodejs
+from categories import health  # 새로운 카테고리 추가
 from post_logger import log_post, save_log_to_gist
 from email_reporter import send_email_report
 
@@ -107,9 +108,10 @@ function copyCode(button) {{
     response = requests.post(url, headers=headers, json=post_data)
     if response.status_code == 200:
         print(f"✅ Posted: {title}")
-        log_post(title, category)
+        log_post(title, category, "Success")
     else:
         print(f"❌ Failed: {title} → {response.text}")
+        log_post(title, category, "Failed")
 
 # ✅ main(): 무작위 순서 + 무작위 지연 간격 (KST 기준)
 def main():
@@ -129,11 +131,12 @@ def main():
         javascript.generate_javascript_post,
         python.generate_python_post,
         react.generate_react_post,
-        nodejs.generate_nodejs_post
+        nodejs.generate_nodejs_post,
+        health.generate_health_post  # 새로운 카테고리 추가
     ]
 
     random.shuffle(post_generators)
-    delays = sorted(random.sample(range(10, 180), len(post_generators)))  # 10분 이상 간격
+    delays = sorted(random.sample(range(30, 180), len(post_generators)))  # 최소 30분 이상 간격
 
     for i, generator in enumerate(post_generators):
         if i > 0:
