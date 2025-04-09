@@ -2,7 +2,7 @@ import os
 import datetime
 import requests
 
-GITHUB_TOKEN = os.environ.get("GIST_TOKEN")  # GitHub Personal Access Token with gist scope
+GIST_TOKEN = os.environ.get("GIST_TOKEN")  # GitHub Personal Access Token with gist scope
 
 # ✅ 리포트 저장용 리스트
 post_log = []
@@ -12,8 +12,8 @@ def log_post(title: str, category: str):
     post_log.append(f"- [{timestamp}] {title} ({category})")
 
 def save_log_to_gist():
-    if not GITHUB_TOKEN:
-        print("❌ GITHUB_TOKEN not found. Skipping log save.")
+    if not GIST_TOKEN:
+        print("❌ GIST_TOKEN not found. Skipping log save.")
         return
 
     content = "\n".join(post_log)
@@ -30,7 +30,7 @@ def save_log_to_gist():
 
     response = requests.post(
         "https://api.github.com/gists",
-        headers={"Authorization": f"Bearer {GITHUB_TOKEN}"},
+        headers={"Authorization": f"Bearer {GIST_TOKEN}"},
         json=payload
     )
 
