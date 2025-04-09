@@ -6,8 +6,7 @@ import time
 import random
 
 from categories import scholar, economy, minecraft
-from categories import html, css, javascript, python, react, nodejs
-from categories import health  # 새로운 카테고리 추가
+from categories import html, css, javascript, python, react, nodejs, health
 from post_logger import log_post, save_log_to_gist
 from email_reporter import send_email_report
 
@@ -108,10 +107,9 @@ function copyCode(button) {{
     response = requests.post(url, headers=headers, json=post_data)
     if response.status_code == 200:
         print(f"✅ Posted: {title}")
-        log_post(title, category, "Success")
+        log_post(title, category)
     else:
         print(f"❌ Failed: {title} → {response.text}")
-        log_post(title, category, "Failed")
 
 # ✅ main(): 무작위 순서 + 무작위 지연 간격 (KST 기준)
 def main():
@@ -122,6 +120,7 @@ def main():
         print("⏳ Not close enough to 00:00 UTC. Skipping run.")
         return
 
+    # 카테고리별로 포스트를 생성할 생성기 함수 리스트
     post_generators = [
         scholar.generate_scholar_post,
         economy.generate_economy_post,
@@ -131,13 +130,24 @@ def main():
         javascript.generate_javascript_post,
         python.generate_python_post,
         react.generate_react_post,
-        nodejs.generate_nodejs_post,
-        health.generate_health_post  # 새로운 카테고리 추가
+        nodejs.generate_nodejs_post
     ]
 
-    random.shuffle(post_generators)
-    delays = sorted(random.sample(range(30, 180), len(post_generators)))  # 최소 30분 이상 간격
+    # health 카테고리에서 글을 1~4개 랜덤으로 생성
+    categories = [scholar, economy, minecraft, html, css, javascript, python, react, nodejs, health]
+    
+    for category in categories:
+        category_post_count = random.randint(1, 3)  # 하루에 랜덤한 수(1~3개)의 글을 올리기 위해
+        for _ in range(category_post_count):
+            post_generators.append(category.generate_health_post if category == health else category.generate_scholar_post)
 
+    # 포스트 순서를 랜덤으로 섞음
+    random.shuffle(post_generators)
+    delays = sorted(random.sample(range(30, 180), len(post_generators)))  # 최소 30분 간격
+
+    start_time = time.time()  # 현재 시간을 시작 시간으로 기록
+
+    # 각 포스트 생성 후 업로드
     for i, generator in enumerate(post_generators):
         if i > 0:
             delay_minutes = delays[i] - delays[i - 1]
@@ -156,6 +166,11 @@ def main():
             )
         except Exception as e:
             print(f"❌ Error posting from generator '{generator.__name__}':", e)
+
+        # 24시간이 지나지 않도록 확인
+        if time.time() - start_time > 86400:  # 86400초 = 24시간
+            print("❌ Exceeded 24-hour limit. Exiting...")
+            break
 
     save_log_to_gist()
     send_email_report()
