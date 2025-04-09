@@ -133,7 +133,7 @@ def main():
     ]
 
     random.shuffle(post_generators)
-    delays = sorted(random.sample(range(0, 180), len(post_generators)))
+    delays = sorted(random.sample(range(10, 180), len(post_generators)))  # 10분 이상 간격
 
     for i, generator in enumerate(post_generators):
         if i > 0:
