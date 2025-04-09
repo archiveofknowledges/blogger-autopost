@@ -14,7 +14,33 @@ CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 REFRESH_TOKEN = os.environ.get("REFRESH_TOKEN")
 openai.api_key = os.environ.get("OPENAI_API_KEY")
+UNSPLASH_KEY = os.environ.get("UNSPLASH_KEY")
 BLOG_ID = "2146078384292830084"
+
+# ✅ Unsplash 썸네일 이미지 검색
+
+def fetch_unsplash_image(keyword):
+    if not UNSPLASH_KEY:
+        print("❌ UNSPLASH_KEY missing")
+        return None
+
+    url = "https://api.unsplash.com/photos/random"
+    params = {
+        "query": keyword,
+        "orientation": "landscape",
+        "client_id": UNSPLASH_KEY
+    }
+
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        if response.status_code == 200:
+            return response.json()["urls"]["regular"], response.json()["user"]["name"]
+        else:
+            print("❌ Unsplash fetch failed:", response.text)
+            return None, None
+    except Exception as e:
+        print(f"❌ Unsplash exception: {e}")
+        return None, None
 
 # ✅ Blogger Access Token 발급
 def get_access_token():
@@ -46,6 +72,14 @@ def create_post(title, content, category, tags, code_block=None):
         print("❌ Cannot post without access token.")
         return
 
+    # ✅ Unsplash 이미지 삽입
+    image_url, photographer = fetch_unsplash_image(title)
+    if image_url and photographer:
+        image_html = f'<img src="{image_url}" alt="{title}" style="width:100%;max-width:720px;margin-bottom:20px;border-radius:8px;">
+<p style="font-size:0.9em;color:#888;">Photo by {photographer} on <a href="https://unsplash.com" target="_blank">Unsplash</a></p><br>'
+        content = image_html + content
+
+    # ✅ 코드 블록 삽입
     if code_block:
         content += f"""
 <style>
@@ -120,34 +154,29 @@ def main():
         print("⏳ Not close enough to 00:00 UTC. Skipping run.")
         return
 
-    # 카테고리별로 포스트를 생성할 생성기 함수 리스트
-    post_generators = [
-        scholar.generate_scholar_post,
-        economy.generate_economy_post,
-        minecraft.generate_minecraft_post,
-        html.generate_html_post,
-        css.generate_css_post,
-        javascript.generate_javascript_post,
-        python.generate_python_post,
-        react.generate_react_post,
-        nodejs.generate_nodejs_post
-    ]
-
-    # health 카테고리에서 글을 1~4개 랜덤으로 생성
+    post_generators = []
     categories = [scholar, economy, minecraft, html, css, javascript, python, react, nodejs, health]
-    
+
     for category in categories:
-        category_post_count = random.randint(1, 3)  # 하루에 랜덤한 수(1~3개)의 글을 올리기 위해
-        for _ in range(category_post_count):
-            post_generators.append(category.generate_health_post if category == health else category.generate_scholar_post)
+        count = random.randint(1, 3) if category in [scholar, python, economy, health] else 1
+        generator = (
+            category.generate_health_post if category == health
+            else category.generate_scholar_post if category == scholar
+            else category.generate_economy_post if category == economy
+            else category.generate_python_post if category == python
+            else category.generate_minecraft_post if category == minecraft
+            else category.generate_html_post if category == html
+            else category.generate_css_post if category == css
+            else category.generate_javascript_post if category == javascript
+            else category.generate_react_post if category == react
+            else category.generate_nodejs_post
+        )
+        post_generators.extend([generator] * count)
 
-    # 포스트 순서를 랜덤으로 섞음
     random.shuffle(post_generators)
-    delays = sorted(random.sample(range(30, 180), len(post_generators)))  # 최소 30분 간격
+    delays = sorted(random.sample(range(30, 180), len(post_generators)))
+    start_time = time.time()
 
-    start_time = time.time()  # 현재 시간을 시작 시간으로 기록
-
-    # 각 포스트 생성 후 업로드
     for i, generator in enumerate(post_generators):
         if i > 0:
             delay_minutes = delays[i] - delays[i - 1]
@@ -156,7 +185,7 @@ def main():
 
         try:
             post = generator()
-            formatted_content = format_post_content(post["content"])  # 내용 포맷화
+            formatted_content = format_post_content(post["content"])
             create_post(
                 title=post["title"],
                 content=formatted_content,
@@ -167,8 +196,7 @@ def main():
         except Exception as e:
             print(f"❌ Error posting from generator '{generator.__name__}':", e)
 
-        # 24시간이 지나지 않도록 확인
-        if time.time() - start_time > 86400:  # 86400초 = 24시간
+        if time.time() - start_time > 86400:
             print("❌ Exceeded 24-hour limit. Exiting...")
             break
 
@@ -176,14 +204,8 @@ def main():
     send_email_report()
 
 def format_post_content(content):
-    """
-    주어진 콘텐츠를 HTML로 깔끔하게 형식을 정리하여 반환
-    """
-    content = content.replace("\n", "<br>")  # 줄 바꿈을 HTML <br>로 변환
-
-    # 문단을 <p> 태그로 감싸기
-    content = "<p>" + content.replace("\n\n", "</p><p>") + "</p>"
-
+    content = content.replace("\n", "<br>")
+    content = "<p>" + content.replace("<br><br>", "</p><p>") + "</p>"
     return content
 
 if __name__ == "__main__":
