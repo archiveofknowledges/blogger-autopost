@@ -22,7 +22,7 @@ BLOG_ID = "2146078384292830084"
 def fetch_unsplash_image(keyword):
     if not UNSPLASH_KEY:
         print("❌ UNSPLASH_KEY missing")
-        return None
+        return None, None
 
     url = "https://api.unsplash.com/photos/random"
     params = {
@@ -75,8 +75,10 @@ def create_post(title, content, category, tags, code_block=None):
     # ✅ Unsplash 이미지 삽입
     image_url, photographer = fetch_unsplash_image(title)
     if image_url and photographer:
-        image_html = f'<img src="{image_url}" alt="{title}" style="width:100%;max-width:720px;margin-bottom:20px;border-radius:8px;">
-<p style="font-size:0.9em;color:#888;">Photo by {photographer} on <a href="https://unsplash.com" target="_blank">Unsplash</a></p><br>'
+        image_html = f"""
+<img src="{image_url}" alt="{title}" style="width:100%;max-width:720px;margin-bottom:20px;border-radius:8px;">
+<p style="font-size:0.9em;color:#888;">Photo by {photographer} on <a href="https://unsplash.com" target="_blank">Unsplash</a></p><br>
+"""
         content = image_html + content
 
     # ✅ 코드 블록 삽입
