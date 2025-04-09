@@ -18,6 +18,7 @@ UNSPLASH_KEY = os.environ.get("UNSPLASH_KEY")
 BLOG_ID = "2146078384292830084"
 
 # ✅ Unsplash 썸네일 이미지 검색
+
 def fetch_unsplash_image(keyword):
     if not UNSPLASH_KEY:
         print("❌ UNSPLASH_KEY missing")
@@ -33,8 +34,7 @@ def fetch_unsplash_image(keyword):
     try:
         response = requests.get(url, params=params, timeout=10)
         if response.status_code == 200:
-            data = response.json()
-            return data["urls"]["regular"], data["user"]["name"]
+            return response.json()["urls"]["regular"], response.json()["user"]["name"]
         else:
             print("❌ Unsplash fetch failed:", response.text)
             return None, None
@@ -72,18 +72,11 @@ def create_post(title, content, category, tags, code_block=None):
         print("❌ Cannot post without access token.")
         return
 
-    # 썸네일 이미지 삽입
     image_url, photographer = fetch_unsplash_image(title)
     if image_url and photographer:
-        image_html = f'''
-<img src="{image_url}" alt="{title}" style="width:100%;max-width:720px;margin-bottom:20px;border-radius:8px;">
-<p style="font-size:0.9em;color:#888;">
-Photo by {photographer} on <a href="https://unsplash.com" target="_blank">Unsplash</a>
-</p><br>
-'''
+        image_html = f'<img src="{image_url}" alt="{title}" style="width:100%;max-width:720px;margin-bottom:20px;border-radius:8px;">\n<p style="font-size:0.9em;color:#888;">Photo by {photographer} on <a href="https://unsplash.com" target="_blank">Unsplash</a></p><br>'
         content = image_html + content
 
-    # 코드 블럭 삽입
     if code_block:
         content += f"""
 <style>
@@ -113,7 +106,7 @@ Photo by {photographer} on <a href="https://unsplash.com" target="_blank">Unspla
 
 <h3>Copyable Code Example</h3>
 <div style='position: relative; margin-top: 1em;'>
-  <button onclick="copyCode(this)" class='copy-button'>Copy</button>
+  <button onclick=\"copyCode(this)\" class='copy-button'>Copy</button>
   <pre class='copy-code-block'>{code_block}</pre>
 </div>
 
@@ -149,13 +142,12 @@ function copyCode(button) {{
     else:
         print(f"❌ Failed: {title} → {response.text}")
 
-# ✅ HTML 콘텐츠 포맷팅
+# ✅ 포스트 내용 포맷 (자연스러운 문단 길이와 흐름 유지)
 def format_post_content(content):
-    content = content.replace("\n", "<br>")
-    content = "<p>" + content.replace("<br><br>", "</p><p>") + "</p>"
-    return content
+    paragraphs = [f"<p>{p.strip()}</p>" for p in content.split("\n\n") if p.strip()]
+    return "\n".join(paragraphs)
 
-# ✅ main(): 무작위 순서 + 무작위 지연 간격
+# ✅ main(): 무작위 순서 + 무작위 지연 간격 (KST 기준)
 def main():
     print("🚀 Starting randomized daily auto-post")
 
