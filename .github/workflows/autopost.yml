@@ -2,8 +2,8 @@ name: 자동 블로그 포스팅
 
 on:
   schedule:
-    - cron: '20 7 * * *'  # 매일 한국시간 16:20 실행
-  workflow_dispatch:
+    - cron: '20 7 * * *'  # 매일 한국시간 16:20 실행 (UTC 기준 07:20)
+  # workflow_dispatch:  # 필요시 수동 실행 복구
 
 jobs:
   autopost:
@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        retry: [1]
+        retry: [1]  # 재시도 전략
 
     continue-on-error: false
 
@@ -48,7 +48,7 @@ jobs:
 
       - name: Upload post log (선택)
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2  # ✅ v3 사용 불가로 대체
         with:
           name: blog-post-log
           path: post_log.json
