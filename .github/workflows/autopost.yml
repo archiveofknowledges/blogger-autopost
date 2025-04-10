@@ -2,20 +2,23 @@ name: 자동 블로그 포스팅
 
 on:
   schedule:
-    - cron: '15 15 * * *'  # 한국시간 00:15 (Session A)
-    - cron: '15 21 * * *'  # 한국시간 06:15 (Session B)
-    - cron: '15 3 * * *'   # 한국시간 12:15 (Session C)
-    - cron: '15 9 * * *'   # 한국시간 18:15 (Session D)
-  # workflow_dispatch:  # ✅ 수동 실행 비활성화 시 주석 처리 가능
+    - cron: '0 15 * * *'  # 세션 A (00~05시 KST)
+    - cron: '0 21 * * *'  # 세션 B (06~11시 KST)
+    - cron: '0 3 * * *'   # 세션 C (12~17시 KST)
+    - cron: '0 9 * * *'   # 세션 D (18~23시 KST)
+  # workflow_dispatch:  # 수동 실행 필요 시 주석 해제
 
 jobs:
   autopost:
     runs-on: ubuntu-latest
-    timeout-minutes: 360  # ⏰ 실행 시간 제한 6시간
 
     strategy:
       fail-fast: false
       max-parallel: 1
+      matrix:
+        retry: [1]
+
+    continue-on-error: false
 
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -46,7 +49,7 @@ jobs:
       - name: Run post script
         run: python post.py
 
-      - name: Upload post log (선택)
+      - name: Upload post log
         if: always()
         uses: actions/upload-artifact@v4
         with:
