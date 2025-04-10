@@ -94,6 +94,33 @@ def get_access_token():
         print("❌ Failed to get access token:", response.text)
         return None
 
+def rewrite_human_like(text):
+    import re
+    sentences = re.split(r'(?<=[.!?]) +', text.strip())
+    rewritten = []
+    for s in sentences:
+        s = s.strip()
+        if not s:
+            continue
+        if random.random() < 0.2:
+            s = "You ever think about this? " + s.lower()
+        elif random.random() < 0.3:
+            s = "Honestly, " + s
+        elif random.random() < 0.3:
+            s = s + " Pretty cool, huh?"
+        elif random.random() < 0.3:
+            s = s.replace(" is ", " is kinda ")
+        rewritten.append(s)
+    paragraphs = []
+    i = 0
+    while i < len(rewritten):
+        para_len = random.choice([1, 2, 3, 4])
+        chunk = rewritten[i:i+para_len]
+        if chunk:
+            paragraphs.append(" ".join(chunk))
+        i += para_len
+    return "\n\n".join(paragraphs)
+
 def create_post(title, content, category, tags, code_block=None):
     access_token = get_access_token()
     if not access_token:
@@ -166,9 +193,7 @@ def main():
         post_generators.extend([generator] * count)
 
     random.shuffle(post_generators)
-
-    # 수정된 delay 로직: 각 포스트 간 최소 30~180분 보장
-    delays = [0]  # 첫 글은 바로 업로드
+    delays = [0]
     for _ in range(1, len(post_generators)):
         delays.append(delays[-1] + random.randint(30, 180))
 
@@ -182,6 +207,7 @@ def main():
 
         try:
             post = generator()
+            post["content"] = rewrite_human_like(post["content"])
             formatted_content = format_post_content(post["content"])
             create_post(
                 title=post["title"],
