@@ -21,7 +21,7 @@ jobs:
       EMAIL_USER: ${{ secrets.EMAIL_USER }}
       EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
       TO_EMAIL: ${{ secrets.TO_EMAIL }}
-
+      INDEXING_KEY_JSON: ${{ secrets.INDEXING_KEY_JSON }}  # ✅ 추가 필요
 
     steps:
       - name: Checkout repository
