@@ -102,8 +102,9 @@ def rewrite_human_like(text):
         s = s.strip()
         if not s:
             continue
+        # 자연스러운 인간적인 어투 추가
         if random.random() < 0.2:
-            s = "You ever think about this? " + s.lower()
+            s = "You ever wonder about this? " + s.lower()
         elif random.random() < 0.3:
             s = "Honestly, " + s
         elif random.random() < 0.3:
@@ -111,6 +112,8 @@ def rewrite_human_like(text):
         elif random.random() < 0.3:
             s = s.replace(" is ", " is kinda ")
         rewritten.append(s)
+    
+    # 글을 여러 문단으로 나누기
     paragraphs = []
     i = 0
     while i < len(rewritten):
@@ -119,6 +122,9 @@ def rewrite_human_like(text):
         if chunk:
             paragraphs.append(" ".join(chunk))
         i += para_len
+    
+    # 출처 추가
+    paragraphs.append("Source: based on community trends from Reddit and YouTube")
     return "\n\n".join(paragraphs)
 
 def clean_markdown_syntax(text):
