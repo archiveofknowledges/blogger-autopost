@@ -3,5 +3,3 @@ requests
 matplotlib
 google-auth
 google-auth-oauthlib
-openai
-requests
