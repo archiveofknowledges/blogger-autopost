@@ -6,35 +6,38 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 def generate_html_post():
     topics = [
-        "Creating a Basic HTML Document",
-        "Understanding HTML Headings and Paragraphs",
-        "Working with Images in HTML",
-        "Creating Lists and Tables in HTML",
-        "Building Forms with Input Fields",
-        "Using Links and Anchor Tags",
-        "Understanding HTML Semantics",
-        "Embedding Videos and Media",
-        "Structuring Web Pages with HTML5 Elements",
-        "Best Practices for Accessible HTML"
+        "Creating a Basic HTML Page from Scratch",
+        "HTML Headings and Semantic Structure",
+        "Embedding Images and Videos with HTML",
+        "Creating Tables and Lists in HTML5",
+        "How to Build Contact Forms in HTML",
+        "Anchor Tags and Internal Linking",
+        "Using HTML5 Semantic Tags: article, section, aside",
+        "Forms and Input Types Explained",
+        "Best Practices for HTML Accessibility",
+        "Structuring Content for SEO with HTML"
     ]
+
     selected_topic = random.choice(topics)
 
-    prompt = (
-        f"You are a friendly and knowledgeable HTML tutor writing a casual, friendly blog post on the topic: '{selected_topic}'. "
-        "Use clean HTML only—no markdown, no triple backticks. "
-        "Structure with <h2> for the title, <h3> for sections, and <p> for paragraphs. "
-        "Include a clearly separated code example in a <pre><code class='language-html'>...</code></pre> block. "
-        "Use a tone that feels natural and helpful, as if explaining to a beginner on a tech forum."
-    )
+    prompt = f"""
+You are an HTML instructor for beginner web developers. 
+Write a friendly and clearly structured blog post on: "{selected_topic}".
+Use casual but helpful tone, like Dev.to or personal Medium blog.
+Use only clean HTML formatting: <h2> for main title, <h3> for sections, <p> for explanations.
+Wrap example code with <pre><code class='language-html'>...</code></pre>.
+No Markdown, no triple backticks. This will be used directly on a Blogger blog.
+Make sure to vary sentence and paragraph length to sound human-written.
+"""
 
     try:
         response = openai.chat.completions.create(
             model="gpt-4-turbo",
             messages=[
-                {"role": "system", "content": "You are a casual HTML tutor writing easy-to-read HTML tutorials for beginners."},
+                {"role": "system", "content": "You write HTML tutorials for beginner-friendly blogs."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.75,
+            temperature=0.7,
             max_tokens=1500
         )
 
@@ -53,9 +56,13 @@ def generate_html_post():
             "content": content,
             "code": code_block,
             "category": "html",
-            "tags": ["html", "web development", "frontend", "beginner", "tutorial"]
+            "tags": ["HTML", "Web Development", "Frontend", "Tutorial", "HTML5"]
         }
 
     except Exception as e:
-        print(f"❌ Error generating html post: {e}")
-        return None
+        return {
+            "title": f"HTML Post (Error)",
+            "content": f"<p>⚠️ Failed to generate HTML post due to: {e}</p>",
+            "category": "html",
+            "tags": ["html", "error"]
+        }
