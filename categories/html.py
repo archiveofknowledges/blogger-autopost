@@ -6,39 +6,36 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 def generate_html_post():
     topics = [
-        "Creating a Basic HTML Page from Scratch",
-        "HTML Headings and Semantic Structure",
-        "Embedding Images and Videos with HTML",
-        "Creating Tables and Lists in HTML5",
-        "How to Build Contact Forms in HTML",
-        "Anchor Tags and Internal Linking",
-        "Using HTML5 Semantic Tags: article, section, aside",
-        "Forms and Input Types Explained",
-        "Best Practices for HTML Accessibility",
-        "Structuring Content for SEO with HTML"
+        "Creating a Basic HTML Document",
+        "Understanding HTML Headings and Paragraphs",
+        "Working with Images in HTML",
+        "Creating Lists and Tables in HTML",
+        "Building Forms with Input Fields",
+        "Using Links and Anchor Tags",
+        "Understanding HTML Semantics",
+        "Embedding Videos and Media",
+        "Structuring Web Pages with HTML5 Elements",
+        "Best Practices for Accessible HTML"
     ]
 
     selected_topic = random.choice(topics)
 
     prompt = f"""
-You are an HTML instructor for beginner web developers. 
-Write a friendly and clearly structured blog post on: "{selected_topic}".
-Use casual but helpful tone, like Dev.to or personal Medium blog.
-Use only clean HTML formatting: <h2> for main title, <h3> for sections, <p> for explanations.
-Wrap example code with <pre><code class='language-html'>...</code></pre>.
-No Markdown, no triple backticks. This will be used directly on a Blogger blog.
-Make sure to vary sentence and paragraph length to sound human-written.
+You're an HTML tutor writing a helpful blog post about: "{selected_topic}".
+Use only HTML — no Markdown, no backticks.
+Structure it cleanly using <h2> for the title, <h3> for section headers, and <p> for each paragraph.
+Include one example in a <pre><code class='language-html'>...</code></pre> block.
+Write in a friendly, beginner-focused tone like Dev.to or MDN tutorials.
+Vary paragraph length and sentence tone to sound more human-like.
+Ensure the HTML can be posted directly to a Blogger post and will render well.
 """
 
     try:
         response = openai.chat.completions.create(
             model="gpt-4-turbo",
-            messages=[
-                {"role": "system", "content": "You write HTML tutorials for beginner-friendly blogs."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-            max_tokens=1500
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.75,
+            max_tokens=1600
         )
 
         full_content = response.choices[0].message.content.strip()
@@ -56,12 +53,12 @@ Make sure to vary sentence and paragraph length to sound human-written.
             "content": content,
             "code": code_block,
             "category": "html",
-            "tags": ["HTML", "Web Development", "Frontend", "Tutorial", "HTML5"]
+            "tags": ["HTML", "Frontend", "Web Development", "Beginner", "Markup"]
         }
 
     except Exception as e:
         return {
-            "title": f"HTML Post (Error)",
+            "title": "HTML Post (Error)",
             "content": f"<p>⚠️ Failed to generate HTML post due to: {e}</p>",
             "category": "html",
             "tags": ["html", "error"]
