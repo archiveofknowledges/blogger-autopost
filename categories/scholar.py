@@ -15,22 +15,27 @@ def generate_scholar_post():
         "Genetic engineering and CRISPR applications",
         "Architectural trends in postmodern urban design",
         "Sociological perspectives on digital identity",
-        "Philosophical foundations of existential ethics"
+        "Philosophical foundations of existential ethics",
+        "Neural correlates of consciousness in sleep studies",
+        "Historical context of political revolutions",
+        "The ethics of artificial intelligence in modern warfare"
     ]
     selected_topic = random.choice(topics)
 
     prompt = (
-        f"You are an academic writer. Generate a well-structured, long-form blog post on the topic: '{selected_topic}'. "
-        "Format everything in clean HTML: use <h2> for the title, <h3> for each section heading, and wrap all paragraphs in <p> tags. "
-        "Avoid Markdown. The post should include the following sections: Introduction, Literature Review, Methodology, Results and Discussion, Conclusion, and References (formatted as <ul><li>). "
-        "Write naturally, varying sentence length and flow. Keep the tone professional but readable."
+        f"You are an academic writer. Generate a well-structured blog post on the topic: '{selected_topic}'. "
+        "Make it sound more natural, slightly informal, and human-written—like an insightful post you'd find on Medium. "
+        "Avoid robotic or overly formal phrasing. Vary sentence lengths and paragraph sizes. "
+        "Format in HTML only: use <h2> for the main title, <h3> for section headings, <p> for text, and <ul><li> for references. "
+        "Include sections: Introduction, Literature Review, Methodology, Results and Discussion, Conclusion, and References. "
+        "Finish with a note that cites general public sources like PubMed, JSTOR, or community forums."
     )
 
     try:
         response = openai.chat.completions.create(
             model="gpt-4-turbo",
             messages=[
-                {"role": "system", "content": "You are an expert academic writer producing clear and structured HTML posts."},
+                {"role": "system", "content": "You are an expert academic writer producing clear, human-like HTML blog posts."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.75,
@@ -38,6 +43,9 @@ def generate_scholar_post():
         )
 
         content = response.choices[0].message.content.strip()
+
+        # 출처 삽입
+        content += "\n<p style=\"font-size: 0.9em; color: gray;\">Sources: Based on academic literature and community contributions (e.g., PubMed, JSTOR, academic blogs).</p>"
 
         post = {
             "title": selected_topic,
