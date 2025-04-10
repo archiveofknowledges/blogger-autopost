@@ -21,7 +21,6 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")
 UNSPLASH_KEY = os.environ.get("UNSPLASH_KEY")
 BLOG_ID = "2146078384292830084"
 
-# ✅ Indexing API 인증용 키 로딩
 INDEXING_KEY_JSON = os.environ.get("INDEXING_KEY_JSON")
 indexing_credentials = None
 if INDEXING_KEY_JSON:
@@ -38,7 +37,7 @@ def notify_google_indexing(url):
     indexing_endpoint = "https://indexing.googleapis.com/v3/urlNotifications:publish"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {indexing_credentials.with_scopes([\"https://www.googleapis.com/auth/indexing\"]).refresh(Request()).token}"
+        "Authorization": f"Bearer {indexing_credentials.with_scopes(['https://www.googleapis.com/auth/indexing']).refresh(Request()).token}"
     }
     payload = {
         "url": url,
@@ -102,7 +101,6 @@ def rewrite_human_like(text):
         s = s.strip()
         if not s:
             continue
-        # 자연스러운 인간적인 어투 추가
         if random.random() < 0.2:
             s = "You ever wonder about this? " + s.lower()
         elif random.random() < 0.3:
@@ -112,8 +110,7 @@ def rewrite_human_like(text):
         elif random.random() < 0.3:
             s = s.replace(" is ", " is kinda ")
         rewritten.append(s)
-    
-    # 글을 여러 문단으로 나누기
+
     paragraphs = []
     i = 0
     while i < len(rewritten):
@@ -122,8 +119,7 @@ def rewrite_human_like(text):
         if chunk:
             paragraphs.append(" ".join(chunk))
         i += para_len
-    
-    # 출처 추가
+
     paragraphs.append("Source: based on community trends from Reddit and YouTube")
     return "\n\n".join(paragraphs)
 
@@ -148,20 +144,28 @@ def create_post(title, content, category, tags, code_block=None):
         content = image_html + content
 
     if code_block:
-        content += f"""
+        code_section = '''
 <style>
-.copy-code-block {{ background: #f4f4f4; border: 1px solid #ccc; padding: 1em; border-radius: 6px; overflow-x: auto; font-size: 0.95em; line-height: 1.5; font-family: monospace; }}
-.copy-button {{ position: absolute; right: 0; top: 0; background-color: #4CAF50; color: white; border: none; padding: 6px 12px; cursor: pointer; font-size: 0.9em; border-radius: 4px; }}
+.copy-code-block { background: #f4f4f4; border: 1px solid #ccc; padding: 1em; border-radius: 6px; overflow-x: auto; font-size: 0.95em; line-height: 1.5; font-family: monospace; }
+.copy-button { position: absolute; right: 0; top: 0; background-color: #4CAF50; color: white; border: none; padding: 6px 12px; cursor: pointer; font-size: 0.9em; border-radius: 4px; }
 </style>
 <h3>Copyable Code Example</h3>
 <div style='position: relative; margin-top: 1em;'>
-  <button onclick=\"copyCode(this)\" class='copy-button'>Copy</button>
-  <pre class='copy-code-block'>{code_block}</pre>
+  <button onclick="copyCode(this)" class='copy-button'>Copy</button>
+  <pre class='copy-code-block'>{}</pre>
 </div>
 <script>
-function copyCode(button) {{ const code = button.nextElementSibling.innerText; navigator.clipboard.writeText(code).then(() => {{ const original = button.innerText; button.innerText = \"Copied!\"; setTimeout(() => button.innerText = original, 1500); }}); }}
+function copyCode(button) {
+  const code = button.nextElementSibling.innerText;
+  navigator.clipboard.writeText(code).then(() => {
+    const original = button.innerText;
+    button.innerText = "Copied!";
+    setTimeout(() => button.innerText = original, 1500);
+  });
+}
 </script>
-"""
+'''.format(code_block)
+        content += code_section
 
     url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/"
     headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
