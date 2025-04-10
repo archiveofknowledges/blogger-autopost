@@ -37,7 +37,7 @@ def notify_google_indexing(url):
     indexing_endpoint = "https://indexing.googleapis.com/v3/urlNotifications:publish"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {indexing_credentials.with_scopes(["https://www.googleapis.com/auth/indexing"]).refresh(Request()).token}"
+        "Authorization": f"Bearer {indexing_credentials.with_scopes([\"https://www.googleapis.com/auth/indexing\"]).refresh(Request()).token}"
     }
     payload = {
         "url": url,
@@ -48,7 +48,6 @@ def notify_google_indexing(url):
         print(f"🔎 Submitted to Google Indexing: {url}")
     else:
         print(f"❌ Indexing failed for {url}: {response.text}")
-
 
 def fetch_unsplash_image(keyword):
     if not UNSPLASH_KEY:
@@ -73,7 +72,6 @@ def fetch_unsplash_image(keyword):
         print(f"❌ Unsplash exception: {e}")
         return None, None
 
-
 def get_access_token():
     if not (CLIENT_ID and CLIENT_SECRET and REFRESH_TOKEN):
         print("❌ Missing CLIENT_ID / CLIENT_SECRET / REFRESH_TOKEN")
@@ -95,7 +93,6 @@ def get_access_token():
     else:
         print("❌ Failed to get access token:", response.text)
         return None
-
 
 def create_post(title, content, category, tags, code_block=None):
     access_token = get_access_token()
@@ -131,7 +128,6 @@ function copyCode(button) {{ const code = button.nextElementSibling.innerText; n
     response = requests.post(url, headers=headers, json=post_data)
 
     if response.status_code == 200:
-        post_id = response.json()["id"]
         post_url = response.json()["url"]
         print(f"✅ Posted: {title}")
         log_post(title, category)
@@ -139,11 +135,9 @@ function copyCode(button) {{ const code = button.nextElementSibling.innerText; n
     else:
         print(f"❌ Failed: {title} → {response.text}")
 
-
 def format_post_content(content):
     paragraphs = [f"<p>{p.strip()}</p>" for p in content.split("\n\n") if p.strip()]
     return "\n".join(paragraphs)
-
 
 def main():
     print("🚀 Starting randomized daily auto-post")
@@ -172,7 +166,12 @@ def main():
         post_generators.extend([generator] * count)
 
     random.shuffle(post_generators)
-    delays = sorted(random.sample(range(30, 180), len(post_generators)))
+
+    # 수정된 delay 로직: 각 포스트 간 최소 30~180분 보장
+    delays = [0]  # 첫 글은 바로 업로드
+    for _ in range(1, len(post_generators)):
+        delays.append(delays[-1] + random.randint(30, 180))
+
     start_time = time.time()
 
     for i, generator in enumerate(post_generators):
