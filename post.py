@@ -152,7 +152,7 @@ def main():
     print("🚀 Starting randomized daily auto-post")
 
     now = datetime.datetime.utcnow()
-    if not (now.hour == 0 and now.minute <= 10):
+    if not (now.hour == 0 and now.minute <= 30):
         print("⏳ Not close enough to 00:00 UTC. Skipping run.")
         return
 
