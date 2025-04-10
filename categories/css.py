@@ -5,51 +5,64 @@ import random
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 def generate_css_post():
-    # ✅ 다양한 CSS 주제 리스트
     topics = [
-        "CSS Box Model Explained",
-        "Flexbox Layout Tutorial",
+        "CSS Box Model Explained in Simple Terms",
+        "How to Use Flexbox for Layouts",
+        "Mastering CSS Grid: Beginner to Intermediate",
+        "Styling Forms Like a Pro",
         "Responsive Design with Media Queries",
-        "CSS Grid: Building Modern Layouts",
-        "Styling Forms with CSS",
-        "Customizing Fonts and Typography",
-        "Creating Transitions and Animations",
-        "CSS Variables and Theming",
-        "How to Use Pseudo-classes and Pseudo-elements",
-        "Best Practices for CSS Organization"
+        "How to Create Smooth Transitions and Hover Effects",
+        "CSS Variables and Theming for Scalable Design",
+        "Organizing CSS for Large Projects",
+        "Understanding Specificity and the Cascade",
+        "Using Pseudo-elements for Fancy Effects"
     ]
+
     selected_topic = random.choice(topics)
 
-    prompt = (
-        f"Write a casual, human-like blog post in HTML format explaining the topic '{selected_topic}' to beginner web developers. "
-        "Structure it with <h2>, <h3>, and <p> tags. Include a mix of sentence lengths and tones. Add rhetorical questions if needed. "
-        "Avoid markdown and triple backticks. Use <pre><code class='language-css'>...</code></pre> for code examples."
-    )
+    prompt = f"""
+You are a CSS instructor writing an informal but helpful tutorial blog post for self-taught web developers.
+Topic: "{selected_topic}".
+Use clean HTML only: <h2> for the title, <h3> for section headings, <p> for content paragraphs.
+Include exactly one example using <pre><code class='language-css'>...</code></pre>.
+Avoid Markdown. Do not use triple backticks.
+Make the writing flow naturally, like a dev blog you'd see on Dev.to or Medium.
+Vary sentence and paragraph length for more human-like rhythm.
+"""
 
-    response = openai.chat.completions.create(
-        model="gpt-4-turbo",
-        messages=[
-            {"role": "system", "content": "You're a CSS instructor writing fun and practical HTML tutorials for a blog."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.85,
-        max_tokens=1500
-    )
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "system", "content": "You write CSS tutorials for frontend learners."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.75,
+            max_tokens=1500
+        )
 
-    full_content = response.choices[0].message.content.strip()
+        full_content = response.choices[0].message.content.strip()
 
-    if "<pre><code" in full_content:
-        parts = full_content.split("<pre><code", 1)
-        content = parts[0].strip()
-        code_block = "<pre><code" + parts[1]
-    else:
-        content = full_content
-        code_block = ""
+        if "<pre><code" in full_content:
+            parts = full_content.split("<pre><code", 1)
+            content = parts[0].strip()
+            code_block = "<pre><code" + parts[1]
+        else:
+            content = full_content
+            code_block = ""
 
-    return {
-        "title": selected_topic,
-        "content": content,
-        "code": code_block,
-        "category": "css",
-        "tags": ["css", "web design", "frontend", "responsive", "tutorial"]
-    }
+        return {
+            "title": selected_topic,
+            "content": content,
+            "code": code_block,
+            "category": "css",
+            "tags": ["CSS", "Frontend", "Web Development", "Styling", "Tutorial"]
+        }
+
+    except Exception as e:
+        return {
+            "title": "CSS Post (Error)",
+            "content": f"<p>⚠️ Failed to generate CSS post due to: {e}</p>",
+            "category": "css",
+            "tags": ["css", "error"]
+        }
