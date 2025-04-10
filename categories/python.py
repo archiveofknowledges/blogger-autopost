@@ -15,47 +15,48 @@ def generate_python_post():
         "Error Handling with try/except",
         "Python List Comprehensions Explained",
         "Object-Oriented Programming Basics",
-        "Using External Libraries with pip"
+        "Using External Libraries with pip",
+        "Writing a Simple Web Scraper",
+        "Making a CLI Tool with argparse"
     ]
     selected_topic = random.choice(topics)
 
     prompt = (
-        f"You are a Python instructor writing for learners who are new to programming. Topic: '{selected_topic}'. "
-        "Write in a slightly casual tone that’s easy to follow, with paragraph length variation to feel more human. "
-        "Use only HTML tags (not Markdown). Use <h2> for title, <h3> for sections, and <p> for explanations. "
-        "Include a <pre><code class='language-python'>...</code></pre> code block for one clear example. "
-        "Ensure the content is ready to be posted on Blogger without further formatting."
+        f"You are a Python educator writing a casual, insightful blog post on: '{selected_topic}'. "
+        "Structure the post in HTML: use <h2> for title, <h3> for section headers, and <p> for body text. "
+        "Include one illustrative example using <pre><code class='language-python'>...</code></pre>. "
+        "Keep the tone accessible and friendly, like a Medium tutorial. Avoid any Markdown or backticks."
     )
 
     try:
         response = openai.chat.completions.create(
             model="gpt-4-turbo",
-            messages=[
-                {"role": "system", "content": "You are an experienced Python developer writing accessible tutorials for beginners."},
-                {"role": "user", "content": prompt}
-            ],
+            messages=[{"role": "user", "content": prompt}],
             temperature=0.75,
-            max_tokens=1500
+            max_tokens=1600
         )
 
-        full_content = response.choices[0].message.content.strip()
+        content = response.choices[0].message.content.strip()
 
-        if "<pre><code" in full_content:
-            parts = full_content.split("<pre><code", 1)
-            content = parts[0].strip()
-            code_block = "<pre><code" + parts[1]
+        if "<pre><code" in content:
+            parts = content.split("<pre><code", 1)
+            main = parts[0].strip()
+            code = "<pre><code" + parts[1]
         else:
-            content = full_content
-            code_block = ""
+            main, code = content, ""
 
         return {
             "title": selected_topic,
-            "content": content,
-            "code": code_block,
+            "content": main,
+            "code": code,
             "category": "python",
-            "tags": ["Python", "Programming", "Tutorial", "Automation", "Development"]
+            "tags": ["Python", "Programming", "Coding", "Development", "Tutorial"]
         }
 
     except Exception as e:
-        print(f"❌ Error generating python post: {e}")
-        return None
+        return {
+            "title": "Python Post (Error)",
+            "content": f"<p>⚠️ Error generating Python post: {e}</p>",
+            "category": "python",
+            "tags": ["python", "error"]
+        }
