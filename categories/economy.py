@@ -1,5 +1,3 @@
-# categories/economy.py
-
 import openai
 import os
 import datetime
@@ -25,29 +23,32 @@ def generate_economy_post():
     today = datetime.datetime.now().strftime("%Y-%m-%d")
 
     prompt = f"""
-Write a detailed and professional blog post targeted at U.S. readers explaining the latest status of the economic indicator: "{indicator}".
-Use a tone that is informative, neutral, and slightly analytical. Explain what the indicator is, how it's measured, the most recent value (can be fictional), and what it implies about the economy.
-Mention possible impacts on consumers and investors. Include references to sources like FRED, BLS, or BEA at the end.
-Use 4–6 paragraphs. Use today's date in the title.
-"""
+    Write a casual, human-like blog post in HTML format about the economic indicator "{indicator}" for a U.S.-based audience.
+    - Explain the indicator in plain language, as if you're writing a Reddit post.
+    - Use short and long sentences mixed, include a few rhetorical questions, and vary the paragraph lengths.
+    - Mention a fictional recent number and what it might mean for everyday people.
+    - Format the text using basic HTML like <h2>, <p>, and <ul> if helpful.
+    - Wrap it up with something slightly opinionated or speculative (e.g. "maybe we're heading for a slowdown?").
+    - Date: {today}.
+    """
 
     try:
         response = openai.chat.completions.create(
             model="gpt-4-turbo",
             messages=[
-                {"role": "system", "content": "You are an economics writer for a financial blog targeting U.S. readers."},
+                {"role": "system", "content": "You are a financial blogger who writes casually but accurately for U.S. readers."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7,
-            max_tokens=1300
+            temperature=0.85,
+            max_tokens=1400
         )
 
         content = response.choices[0].message.content.strip()
-        title = f"{indicator} [{today}]"
+        title = f"What's Going On With {indicator}? [{today}]"
 
         tags = [
-            "US economy", "economic indicators", indicator,
-            "inflation", "interest rates", "finance", "FRED", "investment"
+            "us economy", "economic update", indicator.lower(),
+            "daily economics", "finance", "market trends", "data analysis"
         ]
 
         return {
