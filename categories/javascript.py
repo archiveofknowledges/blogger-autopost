@@ -17,23 +17,28 @@ def generate_javascript_post():
         "Using Fetch API for HTTP Requests",
         "Best Practices in JavaScript Programming"
     ]
+
     selected_topic = random.choice(topics)
 
-    prompt = (
-        f"You are a friendly and humorous JavaScript instructor writing a casual, helpful blog post on the topic: '{selected_topic}'. "
-        "Use only clean HTML (no Markdown or backticks). Structure with <h2> for the main title, <h3> for sections, and <p> for body text. "
-        "Include one example using <pre><code class='language-js'>...</code></pre>. Your tone should feel like a smart but funny developer on Stack Overflow explaining things in plain English."
-    )
+    prompt = f"""
+You're a JavaScript instructor writing an engaging tutorial blog post on: "{selected_topic}".
+Use only raw HTML formatting. Do NOT use Markdown or backticks.
+Use <h2> for the title, <h3> for sections, and wrap all paragraphs in <p> tags.
+Include one code example using <pre><code class='language-js'>...</code></pre>.
+Make the tone friendly and informal — like explaining to a fellow developer.
+Vary sentence and paragraph lengths for a human-like style.
+Ensure this content can be posted directly on Blogger without modification.
+"""
 
     try:
         response = openai.chat.completions.create(
             model="gpt-4-turbo",
             messages=[
-                {"role": "system", "content": "You are a witty JavaScript tutor writing HTML-formatted tutorials for a tech-savvy but casual audience."},
+                {"role": "system", "content": "You write JavaScript tutorials for beginner web developers."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.75,
-            max_tokens=1500
+            max_tokens=1600
         )
 
         full_content = response.choices[0].message.content.strip()
@@ -51,9 +56,13 @@ def generate_javascript_post():
             "content": content,
             "code": code_block,
             "category": "javascript",
-            "tags": ["javascript", "web development", "frontend", "tutorial", "coding"]
+            "tags": ["JavaScript", "Frontend", "Web Development", "Async", "Tutorial"]
         }
 
     except Exception as e:
-        print(f"❌ Error generating javascript post: {e}")
-        return None
+        return {
+            "title": "JavaScript Post (Error)",
+            "content": f"<p>⚠️ Failed to generate JavaScript post due to: {e}</p>",
+            "category": "javascript",
+            "tags": ["javascript", "error"]
+        }
