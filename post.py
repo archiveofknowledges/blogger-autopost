@@ -223,7 +223,7 @@ def main():
     random.shuffle(post_generators)
     delays = [0]
     for _ in range(1, len(post_generators)):
-        delays.append(delays[-1] + random.randint(30, 180))
+        delays.append(delays[-1] + random.randint(30, 150))  # ⏱ 줄인 지연 간격
 
     start_time = time.time()
 
@@ -247,8 +247,8 @@ def main():
         except Exception as e:
             print(f"❌ Error posting from generator '{generator.__name__}':", e)
 
-        if time.time() - start_time > 21600:
-            print("⏰ Session time limit exceeded (6h). Stopping further posts.")
+        if time.time() - start_time > 20700:  # ⏱ 세션 시간 제한: 5시간 45분
+            print("⏰ Session time limit exceeded (5h 45m). Stopping further posts.")
             break
 
     save_log_to_gist()
