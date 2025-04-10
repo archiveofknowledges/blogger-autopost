@@ -5,6 +5,7 @@ import requests
 import openai
 import time
 import random
+import re
 from google.oauth2 import service_account
 from google.auth.transport.requests import Request
 
@@ -95,7 +96,6 @@ def get_access_token():
         return None
 
 def rewrite_human_like(text):
-    import re
     sentences = re.split(r'(?<=[.!?]) +', text.strip())
     rewritten = []
     for s in sentences:
@@ -120,6 +120,15 @@ def rewrite_human_like(text):
             paragraphs.append(" ".join(chunk))
         i += para_len
     return "\n\n".join(paragraphs)
+
+def clean_markdown_syntax(text):
+    text = re.sub(r"^### (.*)", r"<h3>\1</h3>", text, flags=re.MULTILINE)
+    text = re.sub(r"^## (.*)", r"<h2>\1</h2>", text, flags=re.MULTILINE)
+    text = re.sub(r"^# (.*)", r"<h1>\1</h1>", text, flags=re.MULTILINE)
+    text = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", text)
+    text = re.sub(r"\*(.*?)\*", r"<em>\1</em>", text)
+    text = re.sub(r"^- (.*)", r"<li>\1</li>", text, flags=re.MULTILINE)
+    return text
 
 def create_post(title, content, category, tags, code_block=None):
     access_token = get_access_token()
@@ -163,7 +172,8 @@ function copyCode(button) {{ const code = button.nextElementSibling.innerText; n
         print(f"❌ Failed: {title} → {response.text}")
 
 def format_post_content(content):
-    paragraphs = [f"<p>{p.strip()}</p>" for p in content.split("\n\n") if p.strip()]
+    cleaned = clean_markdown_syntax(content)
+    paragraphs = [f"<p>{p.strip()}</p>" for p in cleaned.split("\n\n") if p.strip()]
     return "\n".join(paragraphs)
 
 def main():
