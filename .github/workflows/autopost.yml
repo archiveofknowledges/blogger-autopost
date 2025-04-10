@@ -9,19 +9,25 @@ jobs:
   autopost:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        retry: [1]
+
+    continue-on-error: false
+
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
       REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-      BLOGGER_API_KEY: ${{ secrets.BLOGGER_API_KEY }}  # 사용 안 하면 삭제 가능
-      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}        # 사용 안 하면 삭제 가능
       UNSPLASH_KEY: ${{ secrets.UNSPLASH_KEY }}
       GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
       EMAIL_USER: ${{ secrets.EMAIL_USER }}
       EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
       TO_EMAIL: ${{ secrets.TO_EMAIL }}
-      INDEXING_KEY_JSON: ${{ secrets.INDEXING_KEY_JSON }}  # ✅ 추가 필요
+      INDEXING_KEY_JSON: ${{ secrets.INDEXING_KEY_JSON }}
 
     steps:
       - name: Checkout repository
@@ -39,3 +45,10 @@ jobs:
 
       - name: Run post script
         run: python post.py
+
+      - name: Upload post log (선택)
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: blog-post-log
+          path: post_log.json
