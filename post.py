@@ -1,13 +1,12 @@
 import os
+import json
 import datetime
 import requests
 import openai
 import time
 import random
-import json
-
 from google.oauth2 import service_account
-from googleapiclient.discovery import build
+from google.auth.transport.requests import Request
 
 from categories import scholar, economy, minecraft
 from categories import html, css, javascript, python, react, nodejs, health
@@ -20,27 +19,36 @@ REFRESH_TOKEN = os.environ.get("REFRESH_TOKEN")
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 UNSPLASH_KEY = os.environ.get("UNSPLASH_KEY")
 BLOG_ID = "2146078384292830084"
-SERVICE_ACCOUNT_FILE = os.environ.get("SERVICE_ACCOUNT_FILE")  # Google Indexing API
 
-# ✅ Google Indexing API 색인 요청 함수
-def index_url(url):
-    if not SERVICE_ACCOUNT_FILE:
-        print("❌ SERVICE_ACCOUNT_FILE not set. Skipping index request.")
+# ✅ Indexing API 인증용 키 로딩
+INDEXING_KEY_JSON = os.environ.get("INDEXING_KEY_JSON")
+indexing_credentials = None
+if INDEXING_KEY_JSON:
+    indexing_credentials = service_account.Credentials.from_service_account_info(
+        json.loads(INDEXING_KEY_JSON),
+        scopes=["https://www.googleapis.com/auth/indexing"]
+    )
+
+def notify_google_indexing(url):
+    if not indexing_credentials:
+        print("❌ Missing INDEXING_KEY_JSON. Skipping indexing notification.")
         return
 
-    try:
-        credentials = service_account.Credentials.from_service_account_file(
-            SERVICE_ACCOUNT_FILE,
-            scopes=["https://www.googleapis.com/auth/indexing"]
-        )
-        service = build("indexing", "v3", credentials=credentials)
-        body = {"url": url, "type": "URL_UPDATED"}
-        service.urlNotifications().publish(body=body).execute()
-        print(f"📌 Index request sent for: {url}")
-    except Exception as e:
-        print(f"❌ Indexing error for {url}: {e}")
+    indexing_endpoint = "https://indexing.googleapis.com/v3/urlNotifications:publish"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {indexing_credentials.with_scopes(["https://www.googleapis.com/auth/indexing"]).refresh(Request()).token}"
+    }
+    payload = {
+        "url": url,
+        "type": "URL_UPDATED"
+    }
+    response = requests.post(indexing_endpoint, headers=headers, json=payload)
+    if response.status_code == 200:
+        print(f"🔎 Submitted to Google Indexing: {url}")
+    else:
+        print(f"❌ Indexing failed for {url}: {response.text}")
 
-# ✅ Unsplash 썸네일 이미지 검색
 
 def fetch_unsplash_image(keyword):
     if not UNSPLASH_KEY:
@@ -65,7 +73,7 @@ def fetch_unsplash_image(keyword):
         print(f"❌ Unsplash exception: {e}")
         return None, None
 
-# ✅ Blogger Access Token 발급
+
 def get_access_token():
     if not (CLIENT_ID and CLIENT_SECRET and REFRESH_TOKEN):
         print("❌ Missing CLIENT_ID / CLIENT_SECRET / REFRESH_TOKEN")
@@ -88,7 +96,7 @@ def get_access_token():
         print("❌ Failed to get access token:", response.text)
         return None
 
-# ✅ Blogger 포스트 업로드
+
 def create_post(title, content, category, tags, code_block=None):
     access_token = get_access_token()
     if not access_token:
@@ -103,80 +111,42 @@ def create_post(title, content, category, tags, code_block=None):
     if code_block:
         content += f"""
 <style>
-.copy-code-block {{
-  background: #f4f4f4;
-  border: 1px solid #ccc;
-  padding: 1em;
-  border-radius: 6px;
-  overflow-x: auto;
-  font-size: 0.95em;
-  line-height: 1.5;
-  font-family: monospace;
-}}
-.copy-button {{
-  position: absolute;
-  right: 0;
-  top: 0;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 0.9em;
-  border-radius: 4px;
-}}
+.copy-code-block {{ background: #f4f4f4; border: 1px solid #ccc; padding: 1em; border-radius: 6px; overflow-x: auto; font-size: 0.95em; line-height: 1.5; font-family: monospace; }}
+.copy-button {{ position: absolute; right: 0; top: 0; background-color: #4CAF50; color: white; border: none; padding: 6px 12px; cursor: pointer; font-size: 0.9em; border-radius: 4px; }}
 </style>
-
 <h3>Copyable Code Example</h3>
 <div style='position: relative; margin-top: 1em;'>
   <button onclick=\"copyCode(this)\" class='copy-button'>Copy</button>
   <pre class='copy-code-block'>{code_block}</pre>
 </div>
-
 <script>
-function copyCode(button) {{
-  const code = button.nextElementSibling.innerText;
-  navigator.clipboard.writeText(code).then(() => {{
-    const original = button.innerText;
-    button.innerText = "Copied!";
-    setTimeout(() => button.innerText = original, 1500);
-  }});
-}}
+function copyCode(button) {{ const code = button.nextElementSibling.innerText; navigator.clipboard.writeText(code).then(() => {{ const original = button.innerText; button.innerText = \"Copied!\"; setTimeout(() => button.innerText = original, 1500); }}); }}
 </script>
 """
 
     url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
 
-    post_data = {
-        "kind": "blogger#post",
-        "title": title,
-        "content": content,
-        "labels": [category] + tags
-    }
-
+    post_data = {"kind": "blogger#post", "title": title, "content": content, "labels": [category] + tags}
     response = requests.post(url, headers=headers, json=post_data)
+
     if response.status_code == 200:
-        post_url = response.json().get("url")
+        post_id = response.json()["id"]
+        post_url = response.json()["url"]
         print(f"✅ Posted: {title}")
         log_post(title, category)
-        if post_url:
-            index_url(post_url)
+        notify_google_indexing(post_url)
     else:
         print(f"❌ Failed: {title} → {response.text}")
 
-# ✅ 포스트 내용 포맷 (자연스러운 문단 길이와 흐름 유지)
+
 def format_post_content(content):
     paragraphs = [f"<p>{p.strip()}</p>" for p in content.split("\n\n") if p.strip()]
     return "\n".join(paragraphs)
 
-# ✅ main(): 무작위 순서 + 무작위 지연 간격 (KST 기준)
+
 def main():
     print("🚀 Starting randomized daily auto-post")
-
     now = datetime.datetime.utcnow()
     if not (now.hour == 0 and now.minute <= 30):
         print("⏳ Not close enough to 00:00 UTC. Skipping run.")
