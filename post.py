@@ -4,6 +4,10 @@ import requests
 import openai
 import time
 import random
+import json
+
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 
 from categories import scholar, economy, minecraft
 from categories import html, css, javascript, python, react, nodejs, health
@@ -16,6 +20,25 @@ REFRESH_TOKEN = os.environ.get("REFRESH_TOKEN")
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 UNSPLASH_KEY = os.environ.get("UNSPLASH_KEY")
 BLOG_ID = "2146078384292830084"
+SERVICE_ACCOUNT_FILE = os.environ.get("SERVICE_ACCOUNT_FILE")  # Google Indexing API
+
+# ✅ Google Indexing API 색인 요청 함수
+def index_url(url):
+    if not SERVICE_ACCOUNT_FILE:
+        print("❌ SERVICE_ACCOUNT_FILE not set. Skipping index request.")
+        return
+
+    try:
+        credentials = service_account.Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_FILE,
+            scopes=["https://www.googleapis.com/auth/indexing"]
+        )
+        service = build("indexing", "v3", credentials=credentials)
+        body = {"url": url, "type": "URL_UPDATED"}
+        service.urlNotifications().publish(body=body).execute()
+        print(f"📌 Index request sent for: {url}")
+    except Exception as e:
+        print(f"❌ Indexing error for {url}: {e}")
 
 # ✅ Unsplash 썸네일 이미지 검색
 
@@ -137,8 +160,11 @@ function copyCode(button) {{
 
     response = requests.post(url, headers=headers, json=post_data)
     if response.status_code == 200:
+        post_url = response.json().get("url")
         print(f"✅ Posted: {title}")
         log_post(title, category)
+        if post_url:
+            index_url(post_url)
     else:
         print(f"❌ Failed: {title} → {response.text}")
 
