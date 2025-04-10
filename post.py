@@ -244,6 +244,14 @@ def main():
             break
 
     save_log_to_gist()
+
+    # ✅ post_log.json 로컬에도 저장 (upload-artifact용)
+    try:
+        with open("post_log.json", "w", encoding="utf-8") as f:
+            json.dump(post_log, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"❌ Failed to save post_log.json locally: {e}")
+
     send_email_report()
 
 if __name__ == "__main__":
