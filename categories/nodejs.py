@@ -15,46 +15,48 @@ def generate_nodejs_post():
         "Handling JSON and APIs in Node.js",
         "Using Middleware in Express",
         "Creating RESTful APIs with Node.js",
-        "Error Handling Best Practices"
+        "Error Handling Best Practices",
+        "Deploying Node.js Apps to Heroku",
+        "Common Node.js Performance Tips"
     ]
     selected_topic = random.choice(topics)
 
     prompt = (
-        f"You are a Node.js instructor writing for backend developers learning Node. Topic: '{selected_topic}'. "
-        "The tone should be natural and slightly conversational, with varying paragraph lengths. "
-        "Use only HTML (no Markdown or backticks). Use <h2> for title, <h3> for sections, and <p> for text. "
-        "Include a <pre><code class='language-js'>...</code></pre> block for the main code example. Keep it Blogger-compatible."
+        f"You are a Node.js developer writing a tutorial on the topic: '{selected_topic}'. "
+        "Write in a practical, informal tone like you'd find in a real developer blog. "
+        "Format only in HTML using <h2>, <h3>, <p> and one <pre><code class='language-js'>...</code></pre>. "
+        "Avoid any use of Markdown or backticks. Output should be ready for Blogger."
     )
 
     try:
         response = openai.chat.completions.create(
             model="gpt-4-turbo",
-            messages=[
-                {"role": "system", "content": "You are an experienced web backend engineer writing Node.js blog posts for learners."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.75,
-            max_tokens=1500
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.8,
+            max_tokens=1600
         )
 
-        full_content = response.choices[0].message.content.strip()
+        content = response.choices[0].message.content.strip()
 
-        if "<pre><code" in full_content:
-            parts = full_content.split("<pre><code", 1)
-            content = parts[0].strip()
-            code_block = "<pre><code" + parts[1]
+        if "<pre><code" in content:
+            parts = content.split("<pre><code", 1)
+            main = parts[0].strip()
+            code = "<pre><code" + parts[1]
         else:
-            content = full_content
-            code_block = ""
+            main, code = content, ""
 
         return {
             "title": selected_topic,
-            "content": content,
-            "code": code_block,
+            "content": main,
+            "code": code,
             "category": "nodejs",
-            "tags": ["Node.js", "Backend", "JavaScript", "Web Development", "API"]
+            "tags": ["Node.js", "Backend", "JavaScript", "Express", "Tutorial"]
         }
 
     except Exception as e:
-        print(f"❌ Error generating nodejs post: {e}")
-        return None
+        return {
+            "title": "Node.js Post (Error)",
+            "content": f"<p>⚠️ Failed to generate post due to: {e}</p>",
+            "category": "nodejs",
+            "tags": ["nodejs", "error"]
+        }
