@@ -2,7 +2,7 @@ name: 자동 블로그 포스팅
 
 on:
   schedule:
-    - cron: '23 7 * * *'  # 매일 한국시간 16:23 실행 (UTC 기준 07:23)
+    - cron: '30 7 * * *'  # 매일 한국시간 16:30 실행 (UTC 기준 07:30)
   workflow_dispatch:  # 필요시 수동 실행 복구
 
 jobs:
