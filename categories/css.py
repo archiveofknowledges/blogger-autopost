@@ -21,16 +21,18 @@ def generate_css_post():
     selected_topic = random.choice(topics)
 
     prompt = (
-        f"You are a front-end development tutor. Write a detailed CSS tutorial blog post on the topic: '{selected_topic}'. "
-        "Use only raw HTML, not Markdown. Avoid triple backticks. "
-        "Structure the explanation using <h2>, <h3>, and <p> tags. Wrap any example code inside a <pre><code class='language-css'>...</code></pre> block. "
-        "This post will be published on a Blogger blog. Ensure it's well-formatted and clean HTML only."
+        f"Write a casual, human-like blog post in HTML format explaining the topic '{selected_topic}' to beginner web developers. "
+        "Structure it with <h2>, <h3>, and <p> tags. Include a mix of sentence lengths and tones. Add rhetorical questions if needed. "
+        "Avoid markdown and triple backticks. Use <pre><code class='language-css'>...</code></pre> for code examples."
     )
 
     response = openai.chat.completions.create(
         model="gpt-4-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
+        messages=[
+            {"role": "system", "content": "You're a CSS instructor writing fun and practical HTML tutorials for a blog."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.85,
         max_tokens=1500
     )
 
@@ -44,11 +46,10 @@ def generate_css_post():
         content = full_content
         code_block = ""
 
-    post = {
+    return {
         "title": selected_topic,
         "content": content,
         "code": code_block,
         "category": "css",
-        "tags": ["CSS", "Web Development", "Frontend", "Tutorial", "Responsive Design"]
+        "tags": ["css", "web design", "frontend", "responsive", "tutorial"]
     }
-    return post
