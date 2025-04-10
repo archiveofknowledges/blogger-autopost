@@ -189,8 +189,8 @@ def format_post_content(content):
 def main():
     print("🚀 Starting randomized daily auto-post")
     now = datetime.datetime.utcnow()
-    if not (now.hour == 7 and now.minute >= 35 and now.minute < 40):
-        print("⏳ Not within the 16:35–16:39 KST window. Skipping run.")
+    if not (now.hour == 7 and now.minute >= 45 and now.minute < 50):
+        print("⏳ Not within the 16:45–16:49 KST window. Skipping run.")
         return
 
     post_generators = []
@@ -245,7 +245,6 @@ def main():
 
     save_log_to_gist()
 
-    # ✅ post_log.json 로컬에도 저장 (upload-artifact용)
     try:
         with open("post_log.json", "w", encoding="utf-8") as f:
             json.dump(post_log, f, ensure_ascii=False, indent=2)
