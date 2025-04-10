@@ -144,27 +144,27 @@ def create_post(title, content, category, tags, code_block=None):
         content = image_html + content
 
     if code_block:
-        code_section = '''
+        code_section = f'''
 <style>
-.copy-code-block { background: #f4f4f4; border: 1px solid #ccc; padding: 1em; border-radius: 6px; overflow-x: auto; font-size: 0.95em; line-height: 1.5; font-family: monospace; }
-.copy-button { position: absolute; right: 0; top: 0; background-color: #4CAF50; color: white; border: none; padding: 6px 12px; cursor: pointer; font-size: 0.9em; border-radius: 4px; }
+.copy-code-block {{ background: #f4f4f4; border: 1px solid #ccc; padding: 1em; border-radius: 6px; overflow-x: auto; font-size: 0.95em; line-height: 1.5; font-family: monospace; }}
+.copy-button {{ position: absolute; right: 0; top: 0; background-color: #4CAF50; color: white; border: none; padding: 6px 12px; cursor: pointer; font-size: 0.9em; border-radius: 4px; }}
 </style>
 <h3>Copyable Code Example</h3>
 <div style='position: relative; margin-top: 1em;'>
   <button onclick="copyCode(this)" class='copy-button'>Copy</button>
-  <pre class='copy-code-block'>{}</pre>
+  <pre class='copy-code-block'>{code_block}</pre>
 </div>
 <script>
-function copyCode(button) {
+function copyCode(button) {{
   const code = button.nextElementSibling.innerText;
-  navigator.clipboard.writeText(code).then(() => {
+  navigator.clipboard.writeText(code).then(() => {{
     const original = button.innerText;
     button.innerText = "Copied!";
     setTimeout(() => button.innerText = original, 1500);
-  });
-}
+  }});
+}}
 </script>
-'''.format(code_block)
+'''
         content += code_section
 
     url = f"https://www.googleapis.com/blogger/v3/blogs/{BLOG_ID}/posts/"
@@ -189,8 +189,8 @@ def format_post_content(content):
 def main():
     print("🚀 Starting randomized daily auto-post")
     now = datetime.datetime.utcnow()
-    if not (now.hour == 0 and now.minute <= 30):
-        print("⏳ Not close enough to 00:00 UTC. Skipping run.")
+    if not (now.hour == 7 and now.minute >= 35 and now.minute < 40):
+        print("⏳ Not within the 16:35–16:39 KST window. Skipping run.")
         return
 
     post_generators = []
