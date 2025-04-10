@@ -3,7 +3,7 @@ name: 자동 블로그 포스팅
 on:
   schedule:
     - cron: '15 7 * * *'  # 매일 한국시간 16:15 실행
-  # workflow_dispatch: #수동 실행 비활성화(나중에 다시 활성화할 때 코드 들여쓰기 위치 유지하셈. 앞에 있는 샵이랑 띄어쓰기 지우고 끝!)
+  workflow_dispatch:
 
 jobs:
   autopost:
