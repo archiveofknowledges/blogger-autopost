@@ -11,12 +11,12 @@ medical_fields = {
     "Ophthalmology": ["Cataracts", "Glaucoma", "Macular Degeneration", "Dry Eyes"],
     "Dermatology": ["Acne", "Eczema", "Psoriasis", "Skin Cancer"],
     "ENT": ["Ear Pain", "Sinusitis", "Tonsillitis", "Hoarseness"],
-    "Urology": ["UTI", "Kidney Stones", "Prostate Health", "Incontinence"],
+    "Urology": ["Urinary Tract Infection", "Kidney Stones", "Prostate Health", "Bladder Issues"],
     "Gastroenterology": ["Indigestion", "Gastritis", "Liver Disease", "IBS"],
-    "Cardiology": ["Heart Disease", "Hypertension", "Arrhythmia", "Heart Attack"],
-    "Pulmonology": ["Asthma", "COPD", "Pneumonia", "Lung Cancer"],
-    "Endocrinology": ["Diabetes", "Thyroid Disorders", "Obesity", "Hormone Imbalance"],
-    "Obstetrics and Gynecology": ["Menstrual Pain", "PCOS", "Menopause", "Pregnancy Symptoms"]
+    "Cardiology": ["Heart Disease", "Hypertension", "Arrhythmia"],
+    "Pulmonology": ["Asthma", "COPD", "Pneumonia"],
+    "Endocrinology": ["Diabetes", "Thyroid Disorders", "Obesity"],
+    "Obstetrics and Gynecology": ["Menstrual Pain", "Pregnancy Symptoms", "PCOS", "Menopause"]
 }
 
 def generate_health_post():
@@ -24,23 +24,28 @@ def generate_health_post():
     topic = random.choice(medical_fields[field])
 
     prompt = f"""
-    Write an empathetic and informative blog post in clean HTML format about '{topic}' in the field of {field}.
-    Use <h3> for headings and <p> for paragraphs. Write in a helpful, slightly conversational tone to sound human-like.
-    Vary sentence lengths and paragraph sizes. Cover:
-    - Common symptoms
-    - Possible causes
-    - When to see a doctor
-    - Lifestyle or treatment options
-    - Final takeaway
+You are a compassionate and knowledgeable health blogger writing for an American audience.
+Write an HTML-formatted blog post about the topic "{topic}" under the field of {field}.
+Your tone should be reassuring, clear, and slightly conversational.
+Avoid sounding robotic or overly clinical. Instead, aim for empathy and understanding.
 
-    Do not use Markdown or triple backticks. Close with a short reference note like: “Based on health info from Mayo Clinic, WebMD, and community health forums.”
-    """
+The post should include:
+- <h3>Common Symptoms</h3>
+- <h3>Possible Causes or Related Conditions</h3>
+- <h3>When to See a Doctor</h3>
+- <h3>Home Remedies or Lifestyle Tips</h3>
+- <h3>Conclusion</h3>
+
+Wrap all explanations in <p> tags.
+Finish with a <p> tag citing general health platforms like MayoClinic or WebMD.
+Do not use Markdown or triple backticks.
+"""
 
     try:
         response = openai.chat.completions.create(
             model="gpt-4-turbo",
             messages=[
-                {"role": "system", "content": "You are a friendly health blogger writing for general readers in the U.S."},
+                {"role": "system", "content": "You are a kind health writer helping readers understand common medical symptoms with empathy."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.75,
@@ -48,13 +53,13 @@ def generate_health_post():
         )
 
         content = response.choices[0].message.content.strip()
-        content += '\n<p style="font-size: 0.9em; color: gray;">Sources: Based on public health resources (Mayo Clinic, WebMD, Reddit Health threads).</p>'
+        content += f'\n<p style="font-size: 0.9em; color: gray;">Sources: Based on general medical literature and community-informed platforms (e.g., MayoClinic, WebMD, Reddit health forums).</p>'
 
         return {
-            "title": f"Understanding {topic}: Symptoms, Causes, and What to Do",
+            "title": f"{topic} — Symptoms, Causes & Tips",
             "content": content,
             "category": field,
-            "tags": [field.lower(), topic.lower(), "health", "medical advice"]
+            "tags": [field.lower(), topic.lower(), "health", "symptoms", "self-care"]
         }
 
     except Exception as e:
