@@ -189,8 +189,16 @@ def format_post_content(content):
 def main():
     print("🚀 Starting randomized daily auto-post")
     now = datetime.datetime.utcnow()
-    if not (now.hour == 7 and now.minute >= 45 and now.minute < 50):
-        print("⏳ Not within the 16:45–16:49 KST window. Skipping run.")
+
+    session_ranges = [
+        (15, 21),  # Session A: 00~05 KST
+        (21, 24), (0, 3),  # Session B: 06~11 KST (spans midnight)
+        (3, 9),    # Session C: 12~17 KST
+        (9, 15)    # Session D: 18~23 KST
+    ]
+
+    if not any(start <= now.hour < end for start, end in session_ranges):
+        print("⏳ Outside allowed time for all sessions. Skipping run.")
         return
 
     post_generators = []
@@ -239,8 +247,8 @@ def main():
         except Exception as e:
             print(f"❌ Error posting from generator '{generator.__name__}':", e)
 
-        if time.time() - start_time > 86400:
-            print("❌ Exceeded 24-hour limit. Exiting...")
+        if time.time() - start_time > 21600:
+            print("⏰ Session time limit exceeded (6h). Stopping further posts.")
             break
 
     save_log_to_gist()
