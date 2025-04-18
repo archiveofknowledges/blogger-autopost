@@ -2,10 +2,10 @@ name: 자동 블로그 포스팅
 
 on:
   schedule:
-    - cron: '0 15 * * *'  # 세션 A (00~05시 KST)
-    - cron: '0 21 * * *'  # 세션 B (06~11시 KST)
-    - cron: '0 3 * * *'   # 세션 C (12~17시 KST)
-    - cron: '0 9 * * *'   # 세션 D (18~23시 KST)
+  #  - cron: '0 15 * * *'  # 세션 A (00~05시 KST)
+  #  - cron: '0 21 * * *'  # 세션 B (06~11시 KST)
+  #  - cron: '0 3 * * *'   # 세션 C (12~17시 KST)
+  #  - cron: '0 9 * * *'   # 세션 D (18~23시 KST)
   # workflow_dispatch:  # 수동 실행 필요 시 주석 해제
 
 jobs:
